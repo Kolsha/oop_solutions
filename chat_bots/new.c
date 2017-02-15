@@ -29,9 +29,9 @@ void delete(void *self)
     free(self);
 }
 
-void draw(const void *self)
+void type_msg(const void *self)
 {
     const struct Class * const *cp = self;
-    assert(self && *cp && (*cp)->draw);
-    (*cp)->draw(self);
+    assert(self && *cp && (*cp)->type_msg);
+    (*cp)->type_msg(self);
 }
