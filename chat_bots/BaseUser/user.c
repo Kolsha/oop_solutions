@@ -4,8 +4,8 @@
 #include <assert.h>
 #include <string.h>
 #include "user.h"
-#include "new.h"
-#include "msg_list.h"
+#include "Utils/new.h"
+#include "Utils/msg_list.h"
 
 void set_msgs_history(void *_self, MsgList *msgs)
 {
@@ -37,14 +37,25 @@ static void User_type_msg(const void *_self)
 {
     const struct User *self = _self;
 
-    insert_msg(self->msgs, self->username, "Hey");
+    char *text = build_request("Hey! I'm %s )", self->username);
+
+    if(text != NULL){
+
+        insert_msg(self->msgs, self->username, text);
+        free(text);
+
+    }else{
+
+        insert_msg(self->msgs, self->username, "Hey!");
+
+    }
 }
 
 static const struct Class _User = {
-    sizeof(struct User),       // size
-            User_ctor,                 // ctor
-            User_dtor,                          // dtor
-            User_type_msg                  // draw
+    sizeof(struct User),    // size
+            User_ctor,      // ctor
+            User_dtor,      // dtor
+            User_type_msg   // draw
 };
 
-    const void *User = &_User;
+const void *User = &_User;

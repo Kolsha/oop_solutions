@@ -1,7 +1,7 @@
-#ifndef __circle_h
-#define __circle_h
+#ifndef __girl_h
+#define __girl_h
 
-#include "user.h"
+#include "BaseUser/user.h"
 
 struct Girl {
     const struct User _;

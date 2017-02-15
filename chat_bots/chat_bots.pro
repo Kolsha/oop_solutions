@@ -4,16 +4,26 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += main.c \
-    new.c \
-    msg_list.c \
-    user.c \
-    girl.c
+    BaseUser/user.c \
+    Girls/girl.c \
+    Girls/CowardGirl.c \
+    Utils/new.c \
+    Utils/msg_list.c \
+    Boys/boy.c \
+    Boys/RichBoy.c \
+    Bots/spammer.c \
+    Utils/parser.c
 
 
 HEADERS += \
-    new.h \
-    msg_list.h \
-    user.h \
-    girl.h
+    BaseUser/user.h \
+    Girls/girl.h \
+    Girls/CowardGirl.h \
+    Utils/new.h \
+    Utils/msg_list.h \
+    Boys/boy.h \
+    Boys/RichBoy.h \
+    Bots/spammer.h \
+    Utils/parser.h
 
 QMAKE_CFLAGS += -std=c99
