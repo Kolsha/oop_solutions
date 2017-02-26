@@ -20,7 +20,7 @@ static void *User_ctor(void *_self, va_list *app)
     assert(self->username != NULL);
     self->msgs = va_arg(*app, void*);
     /*
- */
+    */
     assert(self->msgs->username != NULL);
     /*
      */

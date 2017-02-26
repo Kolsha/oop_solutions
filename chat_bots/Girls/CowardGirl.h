@@ -5,7 +5,6 @@
 
 struct CowardGirl {
     const struct Girl _;
-    int rating;
 };
 
 extern const void *CowardGirl;

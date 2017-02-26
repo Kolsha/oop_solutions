@@ -38,4 +38,4 @@ static const struct Class _Spammer = {
             Spammer_type_msg
 };
 
-    const void *Spammer = &_Spammer;
+const void *Spammer = &_Spammer;

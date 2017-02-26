@@ -67,7 +67,7 @@ int main(int argc, char **argv)
                 p = new(RichBoy, res.username, chat, 100);
                 break;
             default:
-                p = new(Spammer, res.username, chat, 100);
+                p = new(Spammer, res.username, chat, 10);
                 break;
             }
 

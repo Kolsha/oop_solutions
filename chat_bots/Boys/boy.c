@@ -39,4 +39,4 @@ static const struct Class _Boy = {
             Boy_type_msg
 };
 
-    const void *Boy = &_Boy;
+const void *Boy = &_Boy;

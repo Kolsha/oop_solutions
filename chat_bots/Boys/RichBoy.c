@@ -6,7 +6,9 @@
 
 static void *RichBoy_ctor(void *_self, va_list *app) {
     struct RichBoy *self = ((const struct Class *)User)->ctor(_self, app);
+
     self->money = va_arg(*app, int);
+
     return self;
 }
 

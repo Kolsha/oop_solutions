@@ -5,8 +5,12 @@
 void *new(const void *_class, ...)
 {
     const struct Class *class = _class;
+
     void *p = calloc(1, class->size);
-    assert(p);
+    if(p == NULL){
+        return NULL;
+    }
+
     *(const struct Class **)p = class;
 
     if (class->ctor) {
@@ -24,14 +28,16 @@ void delete(void *self)
     const struct Class **cp = self;
 
     if (self && *cp && (*cp)->dtor)
+    {
         self = (*cp)->dtor(self);
+    }
 
     free(self);
 }
 
 void type_msg(const void *self)
 {
-    const struct Class * const *cp = self;
+    const struct Class **cp = self;
     assert(self && *cp && (*cp)->type_msg);
     (*cp)->type_msg(self);
 }
