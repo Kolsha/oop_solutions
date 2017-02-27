@@ -5,13 +5,35 @@
 using namespace std;
 
 
-Sampler::Sampler(BaseFunction *func_to_samp)
+Sampler::Sampler(BaseFunction *func_to_samp):
+    func(func_to_samp)
 {
-    func = func_to_samp;
+    //func = func_to_samp;
+}
+
+Sampler::Sampler(BaseFunction *func_to_samp, std::string FN):
+    func(func_to_samp), file_name(FN)
+{
+
+    //func = func_to_samp;
+
+    /*if(FN.length() > 0){
+        file_name = FN;
+    }*/
+}
+
+bool Sampler::set_file_name(std::string FN){
+
+    if(FN.length() > 0){
+        file_name = FN;
+        return true;
+    }
+
+    return true;
 }
 
 
-bool Sampler::start_sample(double from, double to, double step){
+bool Sampler::sample(double from, double to, double step){
 
     double tmp;
 
@@ -27,13 +49,15 @@ bool Sampler::start_sample(double from, double to, double step){
         return false;
     }
 
-    double indx = from;
-    std::string x_log = "*x* ";
-    std::string y_log = "*y* ";
-    while(indx <= to){
+    try
+    {
+        double indx = from;
+        std::string x_log = "*x* ";
+        std::string y_log = "*y* ";
 
-        try
-        {
+        while(indx <= to){
+
+
             tmp = func->Evaluate(indx);
 
             x_log.append(to_string(indx));
@@ -41,24 +65,33 @@ bool Sampler::start_sample(double from, double to, double step){
 
             y_log.append(to_string(tmp));
             y_log.append(" | ");
-        }
-        catch (...)
-        {
-            return false;
-        }
 
 
-        indx += step;
+
+
+            indx += step;
+        }
+
+        if(file_name.length() > 0){
+            ofstream log(file_name);
+            log << x_log << endl;
+            log << y_log << endl;
+            log.close();
+        }else{
+            std::cout << x_log << endl;
+            std::cout << y_log << endl;
+        }
+
+    }catch (...)
+    {
+        return false;
     }
-
-    std::cout << x_log << endl;
-    std::cout << y_log << endl;
 
     return true;
 
 }
 
-bool Sampler::change_func(BaseFunction *func_to_samp){
+bool Sampler::set_func(BaseFunction *func_to_samp){
 
     if(func_to_samp == nullptr){
         return false;

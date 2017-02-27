@@ -11,4 +11,6 @@ public:
     }
 };
 
+void BaseFunctionTests();
+
 #endif // BASEFUNCTION_H

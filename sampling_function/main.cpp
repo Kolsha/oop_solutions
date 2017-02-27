@@ -7,15 +7,30 @@ using namespace std;
 
 int main()
 {
-    cout << "Hello World!" << endl;
+    cout << "Started!" << endl;
+    BaseFunctionTests();
+    SqrtFuncTests();
+    try{
+        double from, to, step;
+        std::ifstream ifs("in.txt");
+        ifs >> from >> to >> step;
+        ifs.close();
 
-    SqrtFunc func;
+        SqrtFunc func;
 
-    cout << func.Evaluate(10) << endl;
+        Sampler smp(&func, "output.txt");
 
-    Sampler smp(&func);
+        if(smp.sample(from, to, step)){
+            cout << "Success" << endl;
+        }else{
+            cout << "Fail" << endl;
+        }
 
-    smp.start_sample(0, 0.05, 0.005);
+    }
+    catch(...){
+        return 1;
+    }
+
     return 0;
 }
 

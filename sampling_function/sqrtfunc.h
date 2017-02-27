@@ -10,4 +10,6 @@ public:
     double Evaluate(double x) override;
 };
 
+void SqrtFuncTests();
+
 #endif // SQRTFUNC_H
