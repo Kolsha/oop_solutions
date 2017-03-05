@@ -1,10 +1,12 @@
 #include <iostream>
 
+#include "ini_files.h"
+
 using namespace std;
 
 int main()
 {
-    cout << "Hello World!" << endl;
+    IniFilesTests();
     return 0;
 }
 
