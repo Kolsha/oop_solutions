@@ -5,6 +5,8 @@
 #include <map>
 
 #define MIN_PARAM_LINE_LENGTH 3
+#define WHITE_SPACES " \t"
+#define COMMENT_STR "#"
 
 using namespace std;
 
@@ -12,10 +14,15 @@ class IniFiles
 {
 private:
     void skip_whitespace(std::string str, size_t &pos);
+    char is_quote(char c);
 protected:
     std::map<std::string, std::string> params;
     std::string last_error;
     bool readParam(std::string line);
+    void setError(std::string err){
+        last_error = err;
+    }
+
 public:
     IniFiles();
     IniFiles(std::string file_name);
@@ -28,6 +35,10 @@ public:
 
     std::string getLastError(){
         return last_error;
+    }
+
+    void clear(){
+        params.clear();
     }
 };
 
