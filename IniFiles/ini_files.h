@@ -13,25 +13,28 @@ using namespace std;
 class IniFiles
 {
 private:
-    void skip_whitespace(std::string str, size_t &pos);
     char is_quote(char c);
+    bool prepare_value(std::string &val);
+    std::string trim(const std::string& str,
+                     const std::string& whitespace = WHITE_SPACES);
 protected:
     std::map<std::string, std::string> params;
     std::string last_error;
     bool readParam(std::string line);
     void setError(std::string err){
         last_error = err;
+        cout << err << endl;
     }
 
 public:
     IniFiles();
-    IniFiles(std::string file_name);
+    IniFiles(const std::string file_name);
     IniFiles(std::istream &is);
     ~IniFiles();
 
     bool readConfiguration(std::istream &is);
 
-    bool readConfiguration(std::string file_name);
+    bool readConfiguration(const std::string file_name);
 
     std::string getLastError(){
         return last_error;
