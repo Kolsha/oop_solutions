@@ -14,12 +14,12 @@ IniFiles::IniFiles()
 
 }
 
-IniFiles::IniFiles(std::string file_name)
+IniFiles::IniFiles(string file_name)
 {
     readConfiguration(file_name);
 }
 
-IniFiles::IniFiles(std::istream &is)
+IniFiles::IniFiles(istream &is)
 {
     readConfiguration(is);
 }
@@ -31,12 +31,12 @@ IniFiles::~IniFiles()
 }
 
 
-bool IniFiles::readConfiguration(const std::string file_name){
+bool IniFiles::readConfiguration(const string file_name){
 
     setError("");
 
     try{
-        std::ifstream ifs(file_name.c_str());
+        ifstream ifs(file_name.c_str());
 
         if(ifs.is_open()){
             bool result = readConfiguration(ifs);
@@ -45,14 +45,14 @@ bool IniFiles::readConfiguration(const std::string file_name){
         }
         setError("Fail in open file: " + file_name);
     }
-    catch(std::exception e){
+    catch(exception e){
         setError(e.what());
     }
 
     return false;
 }
 
-char IniFiles::is_quote(char c){
+char IniFiles::is_quote(char c) const{
 
     switch(c){
     case '\'':
@@ -64,11 +64,11 @@ char IniFiles::is_quote(char c){
     return 0;
 }
 
-std::string IniFiles::trim(const std::string& str,
-                           const std::string& whitespace)
+string IniFiles::trim(const string& str,
+                      const string& whitespace) const
 {
     const auto strBegin = str.find_first_not_of(whitespace);
-    if (strBegin == std::string::npos)
+    if (strBegin == string::npos)
     {
         return ""; // no content
     }
@@ -79,113 +79,87 @@ std::string IniFiles::trim(const std::string& str,
     return str.substr(strBegin, strRange);
 }
 
-string string_replace(const string & s, const string & findS, const std::string & replaceS )
-{
-    string result = s;
-    auto pos = s.find( findS );
-    if ( pos == string::npos ) {
-        return result;
-    }
-    result.replace( pos, findS.length(), replaceS );
-    return string_replace( result, findS, replaceS );
-}
-
 bool IniFiles::prepare_value(string &val){
 
-    static vector< pair< string, string > > patterns = {
-        { "\\\\" , "\\" },
-        { "\\n", "\n" },
-        { "\\r", "\r" },
-        { "\\t", "\t" },
-        { "\\\"", "\"" },
-        { "\\'", "'" }
-    };
-
-    //val = string_replace(val, patterns[0].first, patterns[0].second);
-
-
-    cout << val << endl;
-
     if(!val.length()){
-        false;
+        return false;
     }
 
-    /* check value */
-    size_t count_bs = 0, pos = 0;
-    bool q1 = false, q2 = false, result = true;
-    char prev = '\0', tmp = '\0', main_q = '\0';
+    bool q_open = false;
+    char prev = '\0', main_q = '\0';
 
-    for (char cur : val)
+    string res = "";
+
+    for (size_t pos = 0; pos < val.length(); pos++)
     {
+
+        char cur = val[pos];
+
+        if(prev == '\\'){
+            switch(cur){
+            case '\\':
+                res.push_back(cur);
+                prev = '\0';
+                break;
+            case 'n':
+            case 'r':
+                prev = '\n'; //res.append("\n");
+                break;
+            case 't':
+                prev = '\t'; //res.append("\t");
+                break;
+            default:
+                if(!main_q || cur != main_q){
+                    setError("Escape error");
+                    return false;
+                }
+                prev = main_q; //res.append(main_q);
+
+            }
+
+            continue;
+        }
+
+        if(cur == main_q){
+            q_open = !q_open;
+            continue;
+        }
 
         if(pos < 1 && is_quote(cur)){
             main_q = cur;
-        }
-        else if(is_quote(cur) && !main_q &&
-                (prev != '\\' || count_bs % 2 == 0)){
-
-            setError("Quote in wrong place");
-            return false;
+            //second_q = (main_q == '\'') ? '"' : '\'';
+            q_open = true;
+            continue;
         }
 
-        pos++;
-
-        if(!(q1 || q2) && cur == WHITE_SPACES[0]){
-
+        if(pos > 0 && cur == ' ' && !q_open){
             setError("Whitespace in wrong place");
             return false;
         }
 
-        switch(cur){
-        case '\\':
-            count_bs++;
-            break;
-        case '\'':{
-
-            if(count_bs % 2 == 0){
-                q1 = !q1;
-            }
-            break;
-        }
-
-        case '"':{
-
-            if(count_bs % 2 == 0){
-                q2 = !q2;
-            }
-            break;
-        }
-        default:
-            cout << "";
-        }
-
+        res.push_back(prev);
         prev = cur;
     }
 
-    //return result;
-    /* check value
+    res.push_back(prev);
+    val.assign(res);
 
-    for (const auto & p : patterns){
-        val = string_replace(val, p.first, p.second);
-    }
-*/
-
+    return true;
 }
 
-bool IniFiles::readParam(std::string line){
+bool IniFiles::readParam(string line){
 
     line = trim(line);
+
     if(line.length() < MIN_PARAM_LINE_LENGTH){
         return false;
     }
 
-    std::string key = "", value = "";
-
-    cout <<"|"   << line <<"|"<< endl;
+    string key = "", value = "";
 
     const auto key_end = line.find(WHITE_SPACES[0]);
 
-    if (key_end == std::string::npos)
+    if (key_end == string::npos)
     {
         setError("Empty key");
         return false;
@@ -195,22 +169,18 @@ bool IniFiles::readParam(std::string line){
 
     const auto key_has_comment = key.find(COMMENT_STR);
 
-    if (key_has_comment != std::string::npos)
+    if (key_has_comment != string::npos)
     {
         setError("Comment in key");
         return false;
     }
 
-    /* may be optimised */
     value = line.substr(key_end);
 
     const auto value_has_comment = value.find(COMMENT_STR);
 
     value = value.substr(0, value_has_comment);
     value = trim(value);
-    /* may be optimised */
-
-
 
 
     if(!value.length()){
@@ -219,19 +189,15 @@ bool IniFiles::readParam(std::string line){
     }
 
     if(!prepare_value(value)){
-        setError("Empty value");
+        setError("Bad value");
         return false;
     }
 
-
-
-    //cout << key << " = " << value << endl;
-
     try{
-        params.insert(pair<std::string,std::string>(key, value));
+        params.insert(pair<string,string>(key, value));
         return true;
     }
-    catch(std::exception e){
+    catch(exception e){
         setError(e.what());
     }
 
@@ -239,20 +205,19 @@ bool IniFiles::readParam(std::string line){
 
 }
 
-bool IniFiles::readConfiguration(std::istream &is){
+bool IniFiles::readConfiguration(istream &is){
 
     clear();
     size_t readed = 0;
-    std::string line;
-    while(std::getline(is, line)){
+    string line;
+    while(getline(is, line)){
 
-        //cout << line << endl;
         try{
             if(readParam(line)){
                 readed++;
             }
         }
-        catch(std::exception e){
+        catch(exception e){
             setError(e.what());
         }
 
@@ -262,13 +227,14 @@ bool IniFiles::readConfiguration(std::istream &is){
 
 }
 
-
-
 void IniFilesTests(){
 
-    std::string stringvalues =
-            "name \" Vasya ' ' \\\" Pupkin \"   # пробелы в начале и конце строки";
-    stringvalues.append("\n      spaces ' \\\\ \\    '  # здесь 5 пробелов");
+    string stringvalues = "";
+
+    stringvalues.append("name \" Vasya ' ' \\\" Pupkin \"   # 1");
+    stringvalues.append("\n      spaces ' \\\\ @\"'  # здесь 5 пробелов");
+
+
 
     stringvalues.append("\ntest                 case adf #sdfsdf");
 
@@ -277,12 +243,18 @@ void IniFilesTests(){
 
     stringvalues.append("\nsingle_quote \"'\"");
 
-    stringvalues.append("\nboth_quotes \"'\\\"\"");
+    stringvalues.append("\nboth_quotes2 \"'\\\"\"");
 
-    stringvalues.append("\nboth_quotes 1\\\\\"test-sss");
-    std::istringstream iss(stringvalues);
+    stringvalues.append("\nboth_quotes1 1\\\\\"test-sss");
+
+    istringstream iss(stringvalues);
 
     IniFiles *ini = new IniFiles(iss);
+
+    for (auto& kv : ini->getParamsMap()) {
+        std::cout << kv.first << " has value " << kv.second << std::endl;
+    }
+
 
     delete ini;
 }
