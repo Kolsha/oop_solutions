@@ -6,10 +6,12 @@ CONFIG -= qt
 SOURCES += main.cpp \
     sampler.cpp \
     basefunction.cpp \
-    sqrtfunc.cpp
+    sqrtfunc.cpp \
+    sampler_tests.cpp
 
 HEADERS += \
     sampler.h \
     basefunction.h \
-    sqrtfunc.h
+    sqrtfunc.h \
+    sampler_tests.h
 

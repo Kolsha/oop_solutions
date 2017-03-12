@@ -1,8 +1,5 @@
-#include <iostream>
+#include "ini_tests.h"
 
-#include "ini_files.h"
-
-using namespace std;
 
 int main()
 {

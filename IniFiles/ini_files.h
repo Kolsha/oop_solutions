@@ -49,6 +49,6 @@ public:
     }
 };
 
-void IniFilesTests();
+
 
 #endif // INIFILES_H

@@ -30,5 +30,13 @@ void SqrtFuncTests(){
     assert(test.Evaluate(x) == y);
     //***************//
 
+    //***************//
+    for(int i = 1; i < 100; i++){
+        x = 88;
+        y = sqrt(x);
+        assert(test.Evaluate(x) == y);
+    }
+    //***************//
+
     assert(test.Evaluate(11) != 11);
 }

@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include <assert.h>
+
 #include "ini_files.h"
 
 using namespace std;
@@ -24,12 +26,10 @@ IniFiles::IniFiles(istream &is)
     readConfiguration(is);
 }
 
-
 IniFiles::~IniFiles()
 {
     clear();
 }
-
 
 bool IniFiles::readConfiguration(const string file_name){
 
@@ -227,36 +227,5 @@ bool IniFiles::readConfiguration(istream &is){
 
 }
 
-void IniFilesTests(){
-
-    string stringvalues = "";
-
-    stringvalues.append("name \" Vasya ' ' \\\" Pupkin \"   # 1");
-    stringvalues.append("\n      spaces ' \\\\ @\"'  # здесь 5 пробелов");
-
-
-
-    stringvalues.append("\ntest                 case adf #sdfsdf");
-
-
-    stringvalues.append("\ndouble_quote   '\"'");
-
-    stringvalues.append("\nsingle_quote \"'\"");
-
-    stringvalues.append("\nboth_quotes2 \"'\\\"\"");
-
-    stringvalues.append("\nboth_quotes1 1\\\\\"test-sss");
-
-    istringstream iss(stringvalues);
-
-    IniFiles *ini = new IniFiles(iss);
-
-    for (auto& kv : ini->getParamsMap()) {
-        std::cout << kv.first << " has value " << kv.second << std::endl;
-    }
-
-
-    delete ini;
-}
 
 
