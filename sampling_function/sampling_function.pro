@@ -7,11 +7,9 @@ SOURCES += main.cpp \
     sampler.cpp \
     basefunction.cpp \
     sqrtfunc.cpp \
-    sampler_tests.cpp
 
 HEADERS += \
     sampler.h \
     basefunction.h \
     sqrtfunc.h \
-    sampler_tests.h
 

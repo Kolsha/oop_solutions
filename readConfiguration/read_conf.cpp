@@ -8,14 +8,14 @@ using namespace std;
 
 namespace {
 
-void insert_error(string *perrors, string err){
+void insert_error(string *perrors,const  string & err){
     if(perrors != nullptr){
         perrors->append(err);
         perrors->append("\n");
     }
 }
 
-bool is_escaped(string line, string::size_type pos){
+bool is_escaped(const string & line, string::size_type pos){
 
     size_t count_bs = 0;
     while(line[pos] == '\\'){
@@ -34,12 +34,14 @@ bool is_quote(char c){
     return (c == '"' || c == '\'');
 }
 
-string parse_name(string line, string::size_type &pos){
+string parse_name(const string & line, string::size_type &pos){
+
     string::size_type nameBegin = line.find_first_not_of(WHITE_SPACES, pos);
     if (nameBegin == string::npos)
     {
         return "";
     }
+
     bool quoted = false;
     string find_next = WHITE_SPACES;
 
@@ -62,6 +64,7 @@ string parse_name(string line, string::size_type &pos){
 
         if (nameEnd == string::npos)
         {
+            pos = nameEnd;
             return line.substr(nameBegin);
         }
 
@@ -104,6 +107,7 @@ string parse_name(string line, string::size_type &pos){
     return line.substr(nameBegin , (nameEnd - nameBegin));
 
 }
+
 }
 
 map<string, string> readConfiguration(istream &is,
@@ -128,23 +132,29 @@ map<string, string> readConfiguration(istream &is,
             if (line[pos] != ' ' &&
                     line[pos] != '\t')
             {
+
                 insert_error(perrors,
                              "Comment in key on line "
                              + to_string(line_num));
+
                 continue;
             }
 
             string value = parse_name(line, pos);
 
+
             string::size_type tmp_pos =
                     line.find_first_not_of(WHITE_SPACES, pos);
             if (tmp_pos != string::npos)
             {
+
                 if(line[tmp_pos] != '#' &&
                         line[tmp_pos] != '\0'){
+
                     insert_error(perrors,
                                  "Bad value on line "
                                  + to_string(line_num));
+
                     continue;
                 }
 

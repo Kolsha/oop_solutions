@@ -6,6 +6,10 @@
 
 using namespace std;
 
+double my_func(double x){
+    return x*x;
+}
+
 int main()
 {
     cout << "Started!" << endl;
@@ -13,6 +17,7 @@ int main()
     SqrtFuncTests();
     SamplerTests();
     try{
+
         double from, to, step;
         ifstream ifs("in.txt");
         ifs >> from >> to >> step;
@@ -22,26 +27,26 @@ int main()
 
         Sampler smp(&func);
 
-        map<double, double> *res = smp.sample(from, to, step);
-        if(res != nullptr){
-            try{
-                ofstream ofs("out.txt");
-                ofs << "x y" << endl;
-                for (const auto& key_val : *res) {
-                    ofs << key_val.first << " " << key_val.second << endl;
-                }
-                ofs.close();
-                cout << "Success" << endl;
-            }
-            catch(...){
-                cout << "Fail" << endl;
-                return 1;
-            }
-            delete res;
-        }else{
-            cout << "Fail" << endl;
-        }
+        vector<double> res = smp.sample(from, to, step);
 
+        try{
+            ofstream ofs("out.txt");
+            ofs << "*x* | ";
+            while(from <= to){
+                ofs << from << " | ";
+                from += step;
+            }
+            ofs << endl << "*y* | ";
+            for (const auto& val : res) {
+                ofs << val << " | ";
+            }
+            ofs.close();
+            cout << "Success" << endl;
+        }
+        catch(...){
+            cout << "Fail" << endl;
+            return 1;
+        }
 
     }
     catch(...){

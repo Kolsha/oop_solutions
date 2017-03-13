@@ -1,32 +1,22 @@
-#include <iostream>
-#include <sstream>
-#include <assert.h>
-
+#include "gtest/gtest.h"
 #include "ini_tests.h"
 #include "read_conf.h"
 
 using namespace std;
 
-void IniFilesTests(){
-
+TEST(SuccessWay, FirstTest) {
     string stringvalues = "";
 
-    stringvalues.append("     name           foo\n");
+    stringvalues.append("name foo\n");
 
     stringvalues.append("foo 200 # 400\n");
     stringvalues.append("'foo_bar' 400 # 200\n");
 
     stringvalues.append("#bar 400\n");
-
-    stringvalues.append("'bad_param_name' \"val\\#ue\" dsf \n");
-
     stringvalues.append("  spaces '     '  # здесь 5 пробелов\n");
 
-    stringvalues.append("name \" Vasya Pupkin \"   # пробелы в начале и конце строки");
-
-
-    stringvalues.append("test                 case adf #sdfsdf\n");
-
+    stringvalues.append(
+                "full_name \" Vasya Pupkin \"  # пробелы в начале и конце строки");
 
     stringvalues.append("double_quote   '\"' \n");
 
@@ -36,26 +26,19 @@ void IniFilesTests(){
 
     stringvalues.append("\n\n\n\n\n\n");
 
-
-    stringvalues.append("both_quotes1 1\\\\\"test-sss#213");
-
     istringstream iss(stringvalues);
 
-    string errors;
 
-    map<string, string> cfg = readConfiguration(iss, &errors);
+    map<string, string> cfg = readConfiguration(iss, nullptr);
 
-    for (auto& kv : cfg) {
-        cout << kv.first << " = " << kv.second << endl;
-    }
+    ASSERT_EQ( cfg.at("spaces"), "     ");
 
-    assert( cfg.at("spaces") == string("     "));
+    ASSERT_EQ( cfg.at("full_name"), " Vasya Pupkin ");
 
-    assert( cfg.at("name") == string(" Vasya Pupkin "));
+    ASSERT_EQ( cfg.at("name"), "foo");
 
-    assert( cfg.at("both_quotes1") == string("1\\\"test-sss"));
+    ASSERT_EQ( cfg.at("foo"), "200");
 
-    assert(!cfg.at("test").compare("case adf"));
-    cout << endl << errors << endl;
+    ASSERT_EQ( cfg.at("single_quote"), "'");
 }
 
