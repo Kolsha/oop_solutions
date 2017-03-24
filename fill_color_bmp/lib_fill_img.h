@@ -9,6 +9,6 @@
 
 IplImage *img_flood_fill(const char* filename,
                          const CvPoint seed, const CvScalar color,
-                         const size_t accuracy);
+                         const double accuracy);
 
 #endif // LIB_FILL_IMG_H

@@ -1,27 +1,81 @@
 #include <iostream>
 #include <vector>
+#include <cmath>
 #include "lib_fill_img.h"
 
 namespace{
 
+bool compare_color(const cv::Scalar &a, const cv::Scalar &b, const double accuracy){
+
+    bool res = true;
+    for(size_t i = 0; i < 3; i++){
+        double tmp = abs(a.val[i] - b.val[i]);
+        res = res && (tmp <= accuracy);
+        if(!res){
+            break;
+        }
+    }
+
+    return res;
+}
 
 bool operator ==(const cv::Scalar &a, const cv::Scalar &b)
 {
-    bool Result = false;
-    // Do whatever you think a Scalar comparison must be.
-    return Result;
+    return compare_color(a, b, a.val[3]);
 }
 
-CvScalar get_color_at(const IplImage *res, CvPoint pos){
+bool operator !=(const cv::Scalar &a, const cv::Scalar &b)
+{
+    return !compare_color(a, b, a.val[3]);
+}
+
+bool in_area(const IplImage *res, const CvPoint pos){
+    return !(res->width <= pos.x ||
+             res->height <= pos.y
+             || pos.x < 0
+             || pos.y <0);
+}
+
+
+
+CvScalar get_color_at(const IplImage *res, const CvPoint pos, const double acc){
 
     if(res == nullptr || res->imageData == nullptr){
-        return CV_RGB(0,0,0);
+        return CV_RGB(-1,-1,-1);
+    }
+
+    if(!in_area(res, pos)){
+        return CV_RGB(-1,-1,-1);
     }
 
     uchar* ptr = (uchar*)(res->imageData + (pos.y * res->widthStep));
 
-    return CV_RGB(ptr[3 * pos.x + 2],
+
+    CvScalar color = CV_RGB(ptr[3 * pos.x + 2],
             ptr[3 * pos.x + 1], ptr[3 * pos.x + 0]);
+    color.val[3] = acc;
+    return color;
+}
+
+void set_color_at(IplImage *res, const CvPoint pos, const CvScalar color){
+    if(res == nullptr || res->imageData == nullptr){
+        return ;
+    }
+
+    if(!in_area(res, pos)){
+        return ;
+    }
+
+    uchar* ptr = (uchar*)(res->imageData + (pos.y * res->widthStep));
+
+    ptr[3 * pos.x + 2] = color.val[0];
+    ptr[3 * pos.x + 1] = color.val[1];
+    ptr[3 * pos.x + 0] = color.val[2];
+
+}
+
+CvPoint point_add(CvPoint p, int dx, int dy){
+    return CvPoint(p.x + dx, p.y + dy);
 }
 
 }
@@ -29,7 +83,7 @@ CvScalar get_color_at(const IplImage *res, CvPoint pos){
 
 IplImage *img_flood_fill(const char* filename,
                          const CvPoint seed, const CvScalar color,
-                         const size_t accuracy){
+                         const double accuracy){
 
 
     IplImage *res = cvLoadImage(filename, 1);
@@ -39,27 +93,50 @@ IplImage *img_flood_fill(const char* filename,
 
     std::vector<CvPoint> points;
     points.push_back(seed);
-    uchar* ptr = (uchar*)(res->imageData + (seed.y * res->widthStep));
 
-    CvScalar clr_from = cvScalar(ptr[3 * seed.x + 2],
-            ptr[3 * seed.x + 1], ptr[3 * seed.x + 0], accuracy);
+    CvScalar clr_from = get_color_at(res, seed, accuracy);
 
     while(!points.empty()){
-        CvPoint tmp_p = (CvPoint)points.back();
-        ptr = (uchar*)(res->imageData + (tmp_p.y * res->widthStep));
-        CvScalar tmp_c = cvScalar(ptr[3 * tmp_p.x + 2],
-                ptr[3 * tmp_p.x + 1], ptr[3 * tmp_p.x + 0], accuracy);
+
+        CvPoint pos = (CvPoint)points.back();
         points.pop_back();
-
-
-    }
-
-    for( int y=0; y < res->height; y++ ) {
-        uchar* ptr = (uchar*) ( res->imageData + y * res->widthStep );
-        for( int x=0; x<res->width; x++ ) {
-            //ptr[3*x+2] = 255; //Set red to max (BGR format)
-            ptr[3*x+1] = 255;// green
+        if(!in_area(res, pos)){
+            continue;
         }
+
+        CvScalar clr_tmp = get_color_at(res, pos, accuracy);
+
+        if(clr_tmp != clr_from){
+            continue;
+        }
+
+        set_color_at(res, pos, color);
+
+        CvPoint runner = point_add(pos, 1, 0);
+
+
+        while(get_color_at(res, runner, accuracy) == clr_from){
+            set_color_at(res, runner, color);
+
+            points.push_back(point_add(runner, 0, 1));
+            points.push_back(point_add(runner, 0, -1));
+
+            runner.x++;
+        }
+
+        runner = point_add(pos, -1, 0);
+
+
+        while(get_color_at(res, runner, accuracy) == clr_from){
+            set_color_at(res, runner, color);
+
+            points.push_back(point_add(runner, 0, 1));
+            points.push_back(point_add(runner, 0, -1));
+
+            runner.x--;
+        }
+
+
     }
 
     cvNamedWindow("window", CV_WINDOW_AUTOSIZE);
