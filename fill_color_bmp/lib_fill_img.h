@@ -7,7 +7,11 @@
 #include <opencv2/highgui.hpp>
 #include <opencv2/core/utility.hpp>
 
-IplImage *img_flood_fill(const char* filename,
+bool img_flood_fill(const char* in_fn, const char* out_fn,
+                         const CvPoint seed, const CvScalar color,
+                         const double accuracy);
+
+IplImage *img_flood_fill_raw(const char* in_fn,
                          const CvPoint seed, const CvScalar color,
                          const double accuracy);
 

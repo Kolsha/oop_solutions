@@ -5,7 +5,8 @@
 
 namespace{
 
-bool compare_color(const cv::Scalar &a, const cv::Scalar &b, const double accuracy){
+bool compare_color(const cv::Scalar &a, const cv::Scalar &b,
+                   const double accuracy){
 
     bool res = true;
     for(size_t i = 0; i < 3; i++){
@@ -38,7 +39,8 @@ bool in_area(const IplImage *res, const CvPoint pos){
 
 
 
-CvScalar get_color_at(const IplImage *res, const CvPoint pos, const double acc){
+CvScalar get_color_at(const IplImage *res, const CvPoint pos,
+                      const double acc){
 
     if(res == nullptr || res->imageData == nullptr){
         return CV_RGB(-1,-1,-1);
@@ -81,13 +83,52 @@ CvPoint point_add(CvPoint p, int dx, int dy){
 }
 
 
-IplImage *img_flood_fill(const char* filename,
+bool img_flood_fill(const char* in_fn, const char* out_fn,
                          const CvPoint seed, const CvScalar color,
                          const double accuracy){
 
+    if(in_fn == nullptr || out_fn == nullptr){
+        return false;
+    }
 
-    IplImage *res = cvLoadImage(filename, 1);
+    IplImage *res = img_flood_fill_raw(in_fn, seed, color, accuracy);
     if(res == nullptr){
+        return false;
+    }
+
+    /*cvNamedWindow("window", CV_WINDOW_AUTOSIZE);
+    cvShowImage("window", res);
+    cvWaitKey(0);
+
+    cvReleaseImage(&res);
+    cvDestroyWindow("window");
+    */
+    try{
+        cvSaveImage(out_fn, res);
+        cvReleaseImage(&res);
+        return true;
+    }
+    catch(...){
+        cvReleaseImage(&res);
+        return false;
+    }
+    cvReleaseImage(&res);
+
+    return false;
+}
+
+
+IplImage *img_flood_fill_raw(const char* in_fn,
+                         const CvPoint seed, const CvScalar color,
+                         const double accuracy){
+
+    if(in_fn == nullptr){
+        return nullptr;
+    }
+
+    IplImage *res = cvLoadImage(in_fn, 1);
+    if(res == nullptr || !in_area(res, seed)){
+        delete res;
         return nullptr;
     }
 
@@ -139,11 +180,5 @@ IplImage *img_flood_fill(const char* filename,
 
     }
 
-    cvNamedWindow("window", CV_WINDOW_AUTOSIZE);
-    cvShowImage("window", res);
-    cvWaitKey(0);
-    cvReleaseImage(&res);
-    cvDestroyWindow("window");
-
-
+    return res;
 }
