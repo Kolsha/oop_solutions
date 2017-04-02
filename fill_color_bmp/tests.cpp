@@ -11,8 +11,8 @@ bool equal_img(IplImage *source1, IplImage *source2) {
     cv::Mat mat1 = cv::cvarrToMat(source1);
     cv::Mat mat2 = cv::cvarrToMat(source2);
     cv::Mat D;
-    absdiff(mat1, mat2, D);
-    cv::Scalar s = sum(D);
+    cv::absdiff(mat1, mat2, D);
+    cv::Scalar s = cv::sum(D);
     return s == cv::Scalar::all(0);
 }
 

@@ -2,7 +2,7 @@
 #include "basefunction.h"
 #include "sampler.h"
 #include "sqrtfunc.h"
-#include "sampler_tests.h"
+
 
 using namespace std;
 
@@ -15,7 +15,6 @@ int main()
     cout << "Started!" << endl;
     BaseFunctionTests();
     SqrtFuncTests();
-    SamplerTests();
     try{
 
         double from, to, step;

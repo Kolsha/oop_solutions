@@ -5,26 +5,15 @@
 using namespace std;
 
 TEST(SuccessWay, FirstTest) {
-    string stringvalues = "";
-
-    stringvalues.append("name foo\n");
-
-    stringvalues.append("foo 200 # 400\n");
-    stringvalues.append("'foo_bar' 400 # 200\n");
-
-    stringvalues.append("#bar 400\n");
-    stringvalues.append("  spaces '     '  # здесь 5 пробелов\n");
-
-    stringvalues.append(
-                "full_name \" Vasya Pupkin \"  # пробелы в начале и конце строки");
-
-    stringvalues.append("double_quote   '\"' \n");
-
-    stringvalues.append("single_quote \"'\" \n");
-
-    stringvalues.append("\nboth_quotes2 \"'\\\"\" \n");
-
-    stringvalues.append("\n\n\n\n\n\n");
+    string stringvalues = "name foo\n" "foo 200 # 400\n"
+                          "'foo_bar' 400 # 200\n" "#bar 400\n"
+                          "  spaces '     '  # здесь 5 пробелов\n"
+                          "full_name \" Vasya Pupkin \" "
+                          "# пробелы в начале и конце строки"
+                          "double_quote   '\"' \n"
+                          "single_quote \"'\" \n"
+                          "\nboth_quotes2 \"'\\\"\" \n"
+                          "\n\n\n\n\n\n";
 
     istringstream iss(stringvalues);
 
