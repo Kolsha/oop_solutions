@@ -1,20 +1,10 @@
-#include <iostream>
-#include "my_router.h"
-using namespace std;
+#include "gtest/gtest.h"
+#include "route_tests.h"
 
-int main()
+int main(int argc, char ** argv)
 {
-    MyRouter router;
-    string tmp = "";
-    while (tmp != "exit"){
-        cin >> tmp;
-        int id = router.add_rule(tmp);
-        cout << id << endl;
-        cout << router.get_rule_by_id(id) << endl;
-    }
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
 
-    cout << router.find_request("/test/test") << endl;
-
-    return 0;
 }
 

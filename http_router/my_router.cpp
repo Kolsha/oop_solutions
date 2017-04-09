@@ -26,6 +26,7 @@ bool MyRouter::check_rule(const string rule, std::vector<sRule> &res){
     if(rule.length() < 1 || rule[0] != '/'){
         return false;
     }
+
     auto it_s = rule.find_first_of('/');
     for(;;){
 
@@ -67,6 +68,7 @@ string MyRouter::get_rule_by_id(const int id){
     if(id < 0 || size_t(id) >= rules.size()){
         return "";
     }
+
     string res = "/";
 
     for(auto x:rules[id]){
@@ -152,5 +154,5 @@ int MyRouter::find_request(const string req,
 
     }
 
-    return -1;
+    return NOT_FOUND;
 }

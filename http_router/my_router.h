@@ -20,8 +20,6 @@ protected:
     std::vector <std::vector<sRule>>::iterator last_added_rule;
     bool check_rule(const std::string rule, std::vector<sRule> &res);
 public:
-    //unordered map
-    //find dup
     inline void clear(){
         rules.clear();
     }
