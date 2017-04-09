@@ -3,26 +3,39 @@
 
 #include <vector>
 #include <string>
-#include <map>
+#include <unordered_map>
 
-using namespace std;
+#define NOT_FOUND -1
+
+typedef struct tsRule {
+    std::string name;
+    bool rand;
+} sRule;
+
 
 class MyRouter
 {
 protected:
-    vector <string> rules;
-    bool check_rule(const string rule);
+    std::vector <std::vector<sRule>> rules;
+    std::vector <std::vector<sRule>>::iterator last_added_rule;
+    bool check_rule(const std::string rule, std::vector<sRule> &res);
 public:
-
+    //unordered map
+    //find dup
     inline void clear(){
         rules.clear();
     }
 
-    int add_rule(const string rule);
-    string get_rule_by_id(const int id);
-    int find_request(const string req,
-                     const map<string, string> *param);
+    int last_added();
+
+    int add_rule(const std::string rule);
+
+    std::string get_rule_by_id(const int id);
+    int find_request(const std::string req,
+                     std::unordered_map<std::string, std::string> *param = nullptr);
+
     MyRouter();
+    MyRouter(const std::string rule);
 };
 
 #endif // MYROUTER_H
