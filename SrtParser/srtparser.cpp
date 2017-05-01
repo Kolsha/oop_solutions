@@ -1,172 +1,102 @@
 #include "srtparser.h"
+#include <algorithm>
 #include <sstream>
-#include <string>
-#include <regex>
+#include <iomanip>
 
 using namespace std;
 
-SrtParser::SrtParser():
+const string SrtParser::SHOW_CMD = "Show";
+const string SrtParser::HIDE_CMD = "Hide";
+
+bool cmp_start_time(SubTitle const &s1, SubTitle const &s2){
+    return s1.start_time < s2.start_time;
+}
+
+void ignor(istream &in){
+    string str;
+    getline(in, str);
+    for (int i = 1; getline(in, str); i++){
+        if (str.empty())
+            break;
+    }
+}
+
+SrtParser::SrtParser(istream &in, bool ordered):
     sub_duration(0)
 {
-
-}
-
-SrtParser::SrtParser(istream &data):
-    sub_duration(0)
-{
-    parse(data);
-}
-
-
-
-
-
-double SrtParser::parse_time(const string &str){
-
-    if(str.empty()){
-        return -1;
+    if(get_data(in)){
+        if(ordered){
+            put_in_order();
+        }
     }
 
-    const std::regex re("(\\d{1,3}):(\\d{1,3}):(\\d{1,3}),(\\d{1,3})");
-
-    double ms = 0, s = 0, m = 0, h = 0, sum = 0;
-    std::smatch match;
-    if(std::regex_search(str, match, re)) {
-        h = atof(match.str(1).c_str());
-        m = atof(match.str(2).c_str());
-        s = atof(match.str(3).c_str());
-        ms = atof(match.str(4).c_str());
-        sum += h * 60 * 60;
-        sum += m * 60;
-        sum += s;
-        sum += ms / 1000;
-        return sum;
-    }
-
-    return -1;
 }
 
+bool SrtParser::make_time_in_seconds(float &time, string const &str, int const &multiplier, size_t &pos){
+    const char * s = str.c_str();
+    char * end;
+    int t = strtol(s+pos, &end, 10);
+    pos = (end - s) / sizeof(char);
+    pos++;
+    if (t < 0)
+        return false;
+    time += t * multiplier;
+    if (1 == multiplier) {
+        const char *s = str.c_str();
+        char *end;
+        time += strtol(s + pos, &end, 10) / 1000.0;
+        pos = (end - s) / sizeof(char);
+        if (time < 0){
+            return false;
+        }
 
+    }
+    return true;
+}
 
-
-
-
-
-
-
-size_t SrtParser::parse(std::istream &data){
+size_t SrtParser::get_data(istream &in){
     subs.clear();
-    map<double, double> times;
 
-    while(!data.eof()){
-        int num = -1;
-        data >> num;
-        string time_start, time_end;
-        data >> time_start >> time_end >> time_end;
-
-        if(time_start.empty() || time_end.empty()){
-            continue;
+    while (!in.eof()){
+        string str;
+        getline(in, str);
+        getline(in, str);
+        if (str.empty()) {
+            return subs.size();
         }
+        float start_time = 0;
+        size_t pos = 0;
+        if (!make_time_in_seconds(start_time, str, 3600, pos))
+            ignor(in);
+        else if (!make_time_in_seconds(start_time, str, 60, pos))
+            ignor(in);
+        else if (!make_time_in_seconds(start_time, str, 1, pos))
+            ignor(in);
+        else {
+            subs.push_back({ {}, {}, start_time, 0 });
+            size_t i = subs.size() - 1;
+            pos = pos + 4;
+            float end_time = 0;
+            if (!make_time_in_seconds(end_time, str, 3600, pos))
+                ignor(in);
+            else if (!make_time_in_seconds(end_time, str, 60, pos))
+                ignor(in);
+            else if (!make_time_in_seconds(end_time, str, 1, pos))
+                ignor(in);
+            else {
+                if(end_time > sub_duration){
+                    sub_duration = end_time;
+                }
+                subs[i].end_time = end_time;
+                subs[i].all_not_hide_phrases.push_back(SrtParser::SHOW_CMD);
+                for (int n = 0; getline(in, str); n++){
+                    if (str.empty()){
+                        break;
+                    }
 
-        double tm_start = parse_time(time_start);
-        double tm_end = parse_time(time_end);
-        if(tm_start >= tm_end ||
-                tm_start < 0 || tm_start < 0){
-            continue;
-        }
-
-        string text("");
-        size_t empty_line_count = 0;
-        for(;;){
-            string tmp_text;
-            getline(data, tmp_text);
-
-
-            if(tmp_text.empty()){
-                empty_line_count++;
-            }else{
-                text += (!text.empty() ? "\n" : "")
-                        + tmp_text;
-            }
-
-            if(empty_line_count >= 2){
-                break;
-            }
-        }
-
-        if(text.empty()){
-            continue;
-        }
-
-        if(tm_end > sub_duration){
-            sub_duration = tm_end;
-        }
-
-        SubTitle sub;
-        sub.text = text;
-        sub.tm_end = tm_end;
-
-        subs[tm_start] = sub;
-
-
-    }
-
-    /*for(std::map<double, SubTitle>::iterator it1 = subs.begin();
-        it1 != subs.end(); it1++){
-        for(std::map<double, SubTitle>::iterator it2 = ++it1;
-            it2 != subs.end(); it2++){
-            if(it1->second.tm_end >= it2->first){
-                //it1->second.text += "\n" + it2->second.text;
-                subs.find(it2).text = "";
-            }
-            //cout << it1->first << it2->first << endl;
-        }
-    }*/
-
-    for (auto it1 = subs.begin(); it1 != subs.end(); ++it1)
-    {
-
-        bool need_empty_sub = false;
-        auto it2 = it1;
-        it2++;
-        for (; it2 != subs.end(); ++it2)
-        {
-            cout << "curr: " << it1->first << " - " << it2->first << endl;
-            if(it1 == it2){
-                continue;
-            }
-
-            if(it1->second.tm_end >= it2->first){
-
-                SubTitle tmp1 = it1->second;
-                it1->second.tm_end = it2->first;
-                cout << "Test1 :" << it1->second.tm_end << "   " << tmp1.tm_end << endl;
-
-                SubTitle tmp2 = it2->second;
-
-
-
-
-                if(tmp1.tm_end >= it2->second.tm_end){
-                    SubTitle sub;
-                    sub.text = it1->second.text;
-                    sub.tm_end = it1->second.tm_end;
-                    subs[it2->second.tm_end] = sub;
-                }else{
-                    SubTitle sub;
-                    sub.text = it2->second.text;
-                    sub.tm_end = it2->second.tm_end;
-                    subs[it1->second.tm_end] = sub;
+                    subs[i].new_phrase.push_back(str);
                 }
 
-
-
-            }else if(need_empty_sub){
-                SubTitle sub;
-                sub.text = "";
-                sub.tm_end = it1->second.tm_end;
-                subs[it1->second.tm_end] = sub;
-                break;
             }
         }
     }
@@ -175,59 +105,94 @@ size_t SrtParser::parse(std::istream &data){
     return subs.size();
 }
 
+void SrtParser::hide_phrases()
+{
+    size_t i = 1;
+    for (; i < subs.size() + 2; i = i + 2){
+        subs.insert(subs.begin() + i, { { SrtParser::HIDE_CMD }, {}, subs[i - 1].end_time, 0 });
+        subs[i].all_not_hide_phrases.insert(subs[i].all_not_hide_phrases.end(),
+                                            subs[i - 1].new_phrase.begin(), subs[i - 1].new_phrase.end());
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-void SrtParser::show_subtitles(std::ostream &out){
-    show_subtitles(out, 0, -1);
+    sort(subs.begin(), subs.end(), cmp_start_time);
+    for (size_t i = 1; i < subs.size(); i++) {
+        if (subs[i].end_time < 0.0001){ //if hide
+            subs[i].new_phrase.insert(subs[i].new_phrase.end(), { SrtParser::SHOW_CMD });
+            auto it = subs[i].new_phrase.end();
+            for (size_t j = 0; j < i; j++){
+                if (subs[i].start_time < subs[j].end_time){
+                    subs[i].new_phrase.insert(it,
+                                              subs[j].new_phrase.begin(), subs[j].new_phrase.end());
+                    it = subs[i].new_phrase.end();
+                }
+            }
+        }
+    }
+}
+void SrtParser::put_in_order(){
+    sort(subs.begin(), subs.end(), cmp_start_time);
+    size_t size = subs.size();
+    for (size_t i = 1; i < size; i++){
+        auto it = subs[i].all_not_hide_phrases.end();
+        for (size_t j = 0; j < i; j++){
+            if (subs[i].start_time < subs[j].end_time){
+                subs[i].all_not_hide_phrases.insert(it,
+                                                    subs[j].new_phrase.begin(), subs[j].new_phrase.end());
+                it = subs[i].all_not_hide_phrases.end();
+            }
+        }
+    }
+    hide_phrases();
+    sort(subs.begin(), subs.end(), cmp_start_time);
 }
 
-void SrtParser::show_subtitles(std::ostream &out,
-                               double start,
-                               double end){
-    if(duration() <= 0){
-        return ;
-    }
+string SrtParser::make_time_hh_mm_ss(float &time){
+    int hh = int(time + 0.5) / 3600;
+    int mm = int(time - hh * 3600 + 0.5) / 60;
+    float ss = time - hh * 3600 - mm * 60;
+    ostringstream str;
+    str << hh << ':' << mm << ':' << setprecision(4) << ss << ' ';
+    return str.str();
+}
 
-    if(end <= 0){
-        end = duration();
-    }
+vector<pair<float, vector<string>>> SrtParser::make_out_file(ostream &out){
 
-    if(start >= end){
-        return ;
-    }
-    for (const auto it : subs) {
-        string text = it.second.text;
-        double time = it.first;
-        if(time <= start){
-            continue;
+    put_in_order();
+
+    vector< pair< float, vector<string> > > result;
+    size_t size = subs.size();
+
+    result.resize(size);
+    for (size_t k = 0; k < size; k++){
+        string time = make_time_hh_mm_ss(subs[k].start_time);
+        out << "At " << time;
+        result[k].first = subs[k].start_time;
+        size_t not_hide_size = subs[k].all_not_hide_phrases.size();
+        result[k].second.resize(size+not_hide_size);
+        size_t j = 0;
+        bool show = false;
+        for (; j < not_hide_size; j++){
+            if(!show && subs[k].all_not_hide_phrases[j] != SrtParser::SHOW_CMD){
+                continue;
+            }
+            show = true;
+            out << subs[k].all_not_hide_phrases[j];
+            out << endl;
+            result[k].second[j] = subs[k].all_not_hide_phrases[j];
         }
-        if(time >= end){
-            return ;
+        size_t new_ph_size = subs[k].new_phrase.size();
+        result[k].second.resize(size + not_hide_size+new_ph_size);
+        for (size_t i = 0; i < new_ph_size; i++){
+            out << subs[k].new_phrase[i];
+            result[k].second[j + i] = subs[k].new_phrase[i];
+            if ((subs[k].new_phrase[0] == SrtParser::SHOW_CMD) && (subs[k].new_phrase.size() <= 1)){
+                out << " ''";
+                j++;
+                result[k].second[j + i] = " ''";
+            }
+            out << endl;
         }
-
-        cout << "at " << time << " show '" + text + "'" << endl;
+        out << endl;
     }
+    return result;
 }
