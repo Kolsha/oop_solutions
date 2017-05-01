@@ -7,7 +7,7 @@ int main(int argc, char *argv[])
 {
 
     ifstream strstream;
-    strstream.open("data.txt");
+    strstream.open("/home/kolsha/Projects/C++/oop_solutions/SrtParser/data.txt");
     if(!strstream.is_open()){
         return 1;
     }

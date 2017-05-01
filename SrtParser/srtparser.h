@@ -2,6 +2,7 @@
 #define SRTPARSER_H
 #include <iostream>
 #include <map>
+
 struct SubTitle
 {
     double tm_end;

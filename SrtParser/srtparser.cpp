@@ -57,14 +57,15 @@ double SrtParser::parse_time(const string &str){
 size_t SrtParser::parse(std::istream &data){
     subs.clear();
     map<double, double> times;
-    for(;;){
+
+    while(!data.eof()){
         int num = -1;
         data >> num;
         string time_start, time_end;
         data >> time_start >> time_end >> time_end;
 
         if(time_start.empty() || time_end.empty()){
-            break;
+            continue;
         }
 
         double tm_start = parse_time(time_start);
@@ -110,14 +111,63 @@ size_t SrtParser::parse(std::istream &data){
 
     }
 
-    for(std::map<double, SubTitle>::iterator it1 = subs.begin();
+    /*for(std::map<double, SubTitle>::iterator it1 = subs.begin();
         it1 != subs.end(); it1++){
-        for(std::map<double, SubTitle>::iterator it2 = it1;
+        for(std::map<double, SubTitle>::iterator it2 = ++it1;
             it2 != subs.end(); it2++){
-            if(it1.second.tm_end > it.first){
-
+            if(it1->second.tm_end >= it2->first){
+                //it1->second.text += "\n" + it2->second.text;
+                subs.find(it2).text = "";
             }
-            cout << it1->first << it2->first << endl;
+            //cout << it1->first << it2->first << endl;
+        }
+    }*/
+
+    for (auto it1 = subs.begin(); it1 != subs.end(); ++it1)
+    {
+
+        bool need_empty_sub = false;
+        auto it2 = it1;
+        it2++;
+        for (; it2 != subs.end(); ++it2)
+        {
+            cout << "curr: " << it1->first << " - " << it2->first << endl;
+            if(it1 == it2){
+                continue;
+            }
+
+            if(it1->second.tm_end >= it2->first){
+
+                SubTitle tmp1 = it1->second;
+                it1->second.tm_end = it2->first;
+                cout << "Test1 :" << it1->second.tm_end << "   " << tmp1.tm_end << endl;
+
+                SubTitle tmp2 = it2->second;
+
+
+
+
+                if(tmp1.tm_end >= it2->second.tm_end){
+                    SubTitle sub;
+                    sub.text = it1->second.text;
+                    sub.tm_end = it1->second.tm_end;
+                    subs[it2->second.tm_end] = sub;
+                }else{
+                    SubTitle sub;
+                    sub.text = it2->second.text;
+                    sub.tm_end = it2->second.tm_end;
+                    subs[it1->second.tm_end] = sub;
+                }
+
+
+
+            }else if(need_empty_sub){
+                SubTitle sub;
+                sub.text = "";
+                sub.tm_end = it1->second.tm_end;
+                subs[it1->second.tm_end] = sub;
+                break;
+            }
         }
     }
 
