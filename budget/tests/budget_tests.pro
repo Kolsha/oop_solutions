@@ -4,7 +4,9 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += main.cpp \
-    ../src/spendrow.cpp
+    ../src/spendrow.cpp \
+    ../src/budget.cpp \
+    ../src/utils.cpp
 
 QMAKE_CXXFLAGS += -std=c++0x -pthread
 LIBS += -pthread
@@ -18,4 +20,6 @@ SOURCES += \
     ../../../gtest/googletest/src/gtest-all.cc
 
 HEADERS += \
-    ../src/spendrow.h
+    ../src/spendrow.h \
+    ../src/budget.h \
+    ../src/utils.h

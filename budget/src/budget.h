@@ -2,12 +2,17 @@
 #define BUDGET_H
 #include <vector>
 #include <unordered_map>
-#include <spendrow.h>
-#include <spendrow.h>
+#include "spendrow.h"
+#include "spendrow.h"
 
 struct BudgetRow{
     std::vector< std::string > cats;
     double budget;
+};
+struct CalculatedRow{
+    std::string title;
+    double expected_val;
+    double real_val;
 };
 
 class Budget
@@ -25,7 +30,7 @@ public:
             rows.erase(id - 1);
         }
     }
-    std::vector< std::string > calculate(SpendRow& Costs,
+    std::vector< CalculatedRow > calculate(SpendRow& Costs,
                                          const time_t start = 0, const time_t end = 0);
 };
 

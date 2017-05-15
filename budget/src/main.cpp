@@ -18,9 +18,12 @@ int main(int argc, char *argv[])
     MyBudget.insert_row("Auto:BMW + Moto:Kawasaki", 1000);
     MyBudget.insert_row("Moto:Racer", 1000);
     MyBudget.insert_row("Xioami", 1000);
-    vector< string> res = MyBudget.calculate(test);
+    vector<CalculatedRow> res = MyBudget.calculate(test);
     for (const auto& kv : res) {
-        cout << kv << endl;
+        CalculatedRow row = kv;
+        cout << row.title << "\t" << row.expected_val <<
+                "\t" << row.real_val << "\t" <<
+                (row.real_val / row.expected_val) * 100 << "%"<< endl;
     }
     return 0;
 }

@@ -41,9 +41,9 @@ size_t Budget::insert_row(const string cats, const double budget){
     }
 
 }
-vector< std::string > Budget::calculate(SpendRow& Costs,
-                                        const time_t start, const time_t end){
-    vector< std::string > result;
+std::vector<CalculatedRow> Budget::calculate(SpendRow& Costs,
+                                             const time_t start, const time_t end){
+    vector< CalculatedRow > result;
     double all_sum = Costs.get_sum("", start, end);
     double other_sum = 0;
     if(all_sum <= 0){
@@ -52,26 +52,22 @@ vector< std::string > Budget::calculate(SpendRow& Costs,
     for (const auto& kv : rows) {
         BudgetRow row = kv.second;
         double tmp_sum = 0;
-        string title;
+        CalculatedRow res_row;
         for (const auto& kv : row.cats) {
             tmp_sum += Costs.get_sum(kv, start, end);
-            title += kv + " + ";
+            res_row.title += kv + " + ";
         }
+        res_row.title = res_row.title.substr(0, res_row.title.length() - 2);
 
-        double percent = (tmp_sum / row.budget) * 100;
+        res_row.expected_val = row.budget;
+        res_row.real_val = tmp_sum;
 
-        other_sum += tmp_sum;
-        title = title.substr(0, title.length() - 2);
-        title += to_string(row.budget) + " ";
-        title += to_string(tmp_sum) + " ";
-        title += to_string(percent) + "%";
-        result.push_back(title);
+        result.push_back(std::move(res_row));
 
 
     }
-    other_sum = all_sum - other_sum;
-    string title = "Other 0 " + to_string(other_sum);
-    result.push_back(title);
+    CalculatedRow res_row = {"Other", 0, (all_sum - other_sum)};
+    result.push_back(std::move(res_row));
 
     return result;
 }
