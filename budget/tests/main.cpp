@@ -17,9 +17,6 @@ TEST(BudgetTest, SpendRowTest) {
     ASSERT_NE(all_sum, 300);
     ASSERT_EQ(all_sum, 0);
 
-    all_sum = test.get_sum("", 0, 0);
-
-    ASSERT_EQ(all_sum, 900);
 }
 
 TEST(BudgetTest, BudgetTest) {
@@ -32,7 +29,7 @@ TEST(BudgetTest, BudgetTest) {
     test.insert_buy("Xioami:Notebook:Air 13.3", 12344, 30);
     test.insert_buy("Xioami:Phone:Mi 5S", 12344, 19);
     Budget MyBudget;
-    MyBudget.insert_row("Auto:BMW + Moto:Kawasaki", 1000);
+    MyBudget.insert_row(("Auto:BMW + Moto:Kawasaki"), 1000);
     MyBudget.insert_row("Moto:Racer", 1000);
     MyBudget.insert_row("Xioami", 1000);
     vector<CalculatedRow> res = MyBudget.calculate(test);
@@ -55,6 +52,7 @@ TEST(BudgetTest, BudgetTest) {
         }
 
     }
+
 }
 
 
@@ -88,6 +86,7 @@ TEST(BudgetTest, TZTest) {
         }
 
     }
+
 }
 
 

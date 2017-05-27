@@ -4,7 +4,7 @@
 using namespace std;
 
 
-int main(int argc, char *argv[])
+int main()
 {
 
     SpendRow test("Auto:BMW", 12345678, 500);
@@ -25,5 +25,9 @@ int main(int argc, char *argv[])
                 "\t" << row.real_val << "\t" <<
                 (row.real_val / row.expected_val) * 100 << "%"<< endl;
     }
+
+    //test.free_child();
+
+
     return 0;
 }

@@ -3,10 +3,11 @@
 #include "utils.h"
 using namespace std;
 
-Budget::Budget()
+Budget::Budget(const string &cats, const double budget)
 {
-
+    insert_row(cats, budget);
 }
+
 
 inline bool Budget::get_row(const size_t id, BudgetRow& row){
     if(id > 0){
@@ -21,7 +22,8 @@ inline bool Budget::get_row(const size_t id, BudgetRow& row){
     return false;
 }
 
-size_t Budget::insert_row(const string cats, const double budget){
+
+size_t Budget::insert_row(const string &cats, const double budget){
 
     if(cats.empty() || budget <= 0){
         return 0;
@@ -36,15 +38,13 @@ size_t Budget::insert_row(const string cats, const double budget){
 
     return 0;
 
-    for (const auto& kv : row.cats) {
-        std::cout << kv  << std::endl;
-    }
-
 }
+
+
 std::vector<CalculatedRow> Budget::calculate(SpendRow& Costs,
                                              const time_t start, const time_t end){
     vector< CalculatedRow > result;
-    double all_sum = Costs.get_sum("", start, end);
+    double all_sum = Costs.get_sum(string(""), start, end);
     double other_sum = 0;
     if(all_sum <= 0){
         return result;

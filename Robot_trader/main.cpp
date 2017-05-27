@@ -1,4 +1,6 @@
 #include <iostream>
+#include <curl/curl.h>
+
 #include "stockmarket.h"
 
 using namespace std;

@@ -3,13 +3,13 @@
 #include "utils.h"
 using namespace std;
 
-SpendRow::SpendRow(const string cat, const time_t ts, const double sum)
+SpendRow::SpendRow(const string &cat, const time_t ts, const double sum)
 {
     insert_buy(cat, ts, sum);
 }
 
 
-bool SpendRow::insert_buy(const string cat, const time_t ts,  const double sum){
+bool SpendRow::insert_buy(const string& cat, const time_t ts,  const double sum){
 
     if(sum <= 0 || ts == 0){
         return false;
@@ -55,7 +55,7 @@ bool SpendRow::insert_buy(const string cat, const time_t ts,  const double sum){
     return false;
 }
 
-double SpendRow::get_sum(const std::string cat, const time_t start,
+double SpendRow::get_sum(const string &cat, const time_t start,
                          const time_t end){
     if(!cat.empty()){
         std::string new_cat, cur_cat = cat;
@@ -103,3 +103,6 @@ double SpendRow::get_sum(const std::string cat, const time_t start,
 
     return -1;
 }
+
+
+

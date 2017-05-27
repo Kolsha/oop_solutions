@@ -12,3 +12,7 @@ HEADERS += \
     trader.h \
     broker.h \
     stockmarket.h
+LIBS += -lcurl
+
+DISTFILES += \
+    ../../../../../../usr/bin/curl

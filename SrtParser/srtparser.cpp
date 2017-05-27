@@ -8,9 +8,11 @@ using namespace std;
 const string SrtParser::SHOW_CMD = "Show";
 const string SrtParser::HIDE_CMD = "Hide";
 
+
 bool cmp_start_time(SubTitle const &s1, SubTitle const &s2){
     return s1.start_time < s2.start_time;
 }
+
 
 void ignor(istream &in){
     string str;
@@ -20,6 +22,7 @@ void ignor(istream &in){
             break;
     }
 }
+
 
 SrtParser::SrtParser(istream &in, bool ordered):
     sub_duration(0)
@@ -31,6 +34,7 @@ SrtParser::SrtParser(istream &in, bool ordered):
     }
 
 }
+
 
 bool SrtParser::make_time_in_seconds(float &time, string const &str, int const &multiplier, size_t &pos){
     const char * s = str.c_str();
@@ -53,6 +57,7 @@ bool SrtParser::make_time_in_seconds(float &time, string const &str, int const &
     }
     return true;
 }
+
 
 size_t SrtParser::get_data(istream &in){
     subs.clear();
@@ -105,6 +110,7 @@ size_t SrtParser::get_data(istream &in){
     return subs.size();
 }
 
+
 void SrtParser::hide_phrases()
 {
     size_t i = 1;
@@ -129,6 +135,8 @@ void SrtParser::hide_phrases()
         }
     }
 }
+
+
 void SrtParser::put_in_order(){
     sort(subs.begin(), subs.end(), cmp_start_time);
     size_t size = subs.size();
@@ -146,6 +154,7 @@ void SrtParser::put_in_order(){
     sort(subs.begin(), subs.end(), cmp_start_time);
 }
 
+
 string SrtParser::make_time_hh_mm_ss(float &time){
     int hh = int(time + 0.5) / 3600;
     int mm = int(time - hh * 3600 + 0.5) / 60;
@@ -154,6 +163,7 @@ string SrtParser::make_time_hh_mm_ss(float &time){
     str << hh << ':' << mm << ':' << setprecision(4) << ss << ' ';
     return str.str();
 }
+
 
 vector<pair<float, vector<string>>> SrtParser::make_out_file(ostream &out){
 
