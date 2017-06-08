@@ -8,9 +8,11 @@ SOURCES += main.cpp \
     utils/tinyxml/tinystr.cpp \
     utils/tinyxml/tinyxml.cpp \
     utils/tinyxml/tinyxmlerror.cpp \
-    utils/tinyxml/tinyxmlparser.cpp
+    utils/tinyxml/tinyxmlparser.cpp \
+    utils/geopoint.cxx
 
 HEADERS += \
     gpsscanner.h \
     utils/tinyxml/tinystr.h \
-    utils/tinyxml/tinyxml.h
+    utils/tinyxml/tinyxml.h \
+    utils/geopoint.h
