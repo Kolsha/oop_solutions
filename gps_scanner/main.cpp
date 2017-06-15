@@ -1,6 +1,9 @@
 #include <iostream>
+#include <math.h>
 #include "gpsscanner.h"
 #include "utils/tinyxml/tinyxml.h"
+
+
 using namespace std;
 
 int main(int argc, char *argv[])
@@ -21,24 +24,45 @@ int main(int argc, char *argv[])
 
         double lat, lon, ele;
 
-        for( child; child; child=child->NextSiblingElement() )
+        for( child; child; child = child->NextSiblingElement())
         {
 
-            lat = atof(child->Attribute("lat"));
-            lon = atof(child->Attribute("lon"));
+            string tmp_str(child->Attribute("lat"));
+            size_t last_pos;
+            lat = stof(tmp_str, &last_pos);
+            if(last_pos < 1){
+                continue;
+            }
+
+            tmp_str.assign(child->Attribute("lon"));
+
+            lon = stof(tmp_str, &last_pos);
+            if(last_pos < 1){
+                continue;
+            }
 
             TiXmlElement* tmp = child->FirstChild()->ToElement();
-            string time(tmp->GetText());
             struct tm tm;
-            strptime(time.c_str(), "%FT%TZ", &tm);
+            strptime(tmp->GetText(), "%FT%TZ", &tm);
             time_t tmt = mktime(&tm);
 
+
             tmp = tmp->NextSiblingElement();
-            ele = atof(tmp->GetText());
+            tmp_str.assign(tmp->GetText());
+
+            ele = stof(tmp_str, &last_pos);
+            if(last_pos < 1){
+                continue;
+            }
+
+            if(isnan(ele) || isnan(lon) || isnan(lat)){
+                continue;
+            }
+
             scanner.add_track(tmt, lat, lon, ele);
         }
 
-        cout << scanner.all_distance() << endl;
+        cout << scanner.average_speed(false) << endl;
 
         cout << scanner.duration() << endl;
 
@@ -49,6 +73,7 @@ int main(int argc, char *argv[])
     }
     catch(...){
 
+        return 1;
     }
 
     //doc.Parse()

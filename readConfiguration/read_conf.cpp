@@ -4,7 +4,8 @@
 
 #include "read_conf.h"
 
-using namespace std;
+using std::string;
+
 
 namespace {
 
@@ -110,10 +111,10 @@ string parse_name(const string & line, string::size_type &pos){
 
 }
 
-map<string, string> readConfiguration(istream &is,
-                                      string *perrors){
+std::map<string, string> readConfiguration(std::istream &is,
+                                      std::string *perrors){
 
-    map<string, string> res;
+    std::map<string, string> res;
     string line;
     size_t line_num = 0;
     while(getline(is, line)){
@@ -125,7 +126,7 @@ map<string, string> readConfiguration(istream &is,
             if(!key.length()){
                 insert_error(perrors,
                              "Bad key on line "
-                             + to_string(line_num));
+                             + std::to_string(line_num));
                 continue;
             }
 
@@ -135,7 +136,7 @@ map<string, string> readConfiguration(istream &is,
 
                 insert_error(perrors,
                              "Comment in key on line "
-                             + to_string(line_num));
+                             + std::to_string(line_num));
 
                 continue;
             }
@@ -153,16 +154,16 @@ map<string, string> readConfiguration(istream &is,
 
                     insert_error(perrors,
                                  "Bad value on line "
-                                 + to_string(line_num));
+                                 + std::to_string(line_num));
 
                     continue;
                 }
 
             }
 
-            res.insert(pair<string,string>(key, value));
+            res.insert(std::pair<string,string>(key, value));
         }
-        catch(exception e){
+        catch(std::exception e){
             insert_error(perrors, e.what());
         }
     }

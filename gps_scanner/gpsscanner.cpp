@@ -3,16 +3,7 @@
 
 GPSScanner::GPSScanner()
 {
-    start_time = 0;
-    end_time = 0;
-    _max_height = 0;
-    _min_height = 10000;
-
-    start_run_tm = 0;
-    start_stop_tm = 0;
-
-    _run_time  = 0;
-    _stop_time  = 0;
+    clear();
 }
 
 
@@ -74,6 +65,10 @@ void GPSScanner::add_track(const time_t ts, const double lat,
             if(speed > _max_speed){
                 _max_speed = speed;
             }
+            sum_of_speed += speed;
+            count_sum_of_speed++;
+
+            speed_by_time.insert({ts, speed});
 
         }else{
             if(start_stop_tm < 1){
@@ -102,6 +97,25 @@ double GPSScanner::average_speed(const bool with_stops){
         double tmp = all_distance() / duration();
         return tmp;
     }else{
-
+        double tmp = sum_of_speed / count_sum_of_speed;
+        return tmp;
     }
+}
+
+void GPSScanner::clear()
+{
+    start_time = 0;
+    end_time = 0;
+    _max_height = 0;
+    _min_height = 10000;
+
+    start_run_tm = 0;
+    start_stop_tm = 0;
+
+    _run_time  = 0;
+    _stop_time  = 0;
+
+    sum_of_speed = 0;
+    count_sum_of_speed = 0;
+    tracks.clear();
 }

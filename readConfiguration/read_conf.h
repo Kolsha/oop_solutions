@@ -6,9 +6,12 @@
 #define WHITE_SPACES " \t"
 #define COMMENT_STR "#"
 
-using namespace std;
-
-map<string, string> readConfiguration(istream &is,
-                                      string *perrors = nullptr);
+/* read config file. e.g.:
+ * 'foo' bar    #comment
+ * bar 'foo'    #olol
+ * #ololololololololol
+ */
+std::map<std::string, std::string> readConfiguration(std::istream &is,
+                                      std::string *perrors = nullptr);
 
 #endif // READ_CONF_H

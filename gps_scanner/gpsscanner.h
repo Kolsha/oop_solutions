@@ -16,7 +16,7 @@ class GPSScanner
 {
 private:
     std::map< time_t, GPSTrack> tracks;
-    std::map< std::string, double> speed_range;
+    std::map< time_t, double> speed_by_time;
 
     time_t start_run_tm;
     time_t start_stop_tm;
@@ -28,6 +28,9 @@ private:
     double _min_height, _max_height;
     double _total_climb, _total_descent;
     double _all_distance;
+
+    double sum_of_speed;
+    size_t count_sum_of_speed;
 public:
     GPSScanner();
     void add_track(const time_t ts, const double lat,
@@ -64,6 +67,8 @@ public:
     }
 
     double average_speed(const bool with_stops = true);
+
+    void clear();
 
 };
 
