@@ -7,18 +7,19 @@ using namespace std;
 
 int main()
 {
-    int a = 5;
-    /*ofstream ofs("test.ser", ofstream::out | ofstream::binary);
+    std::map<int, int> a = {{1,2}, {2,3}};
+    ofstream ofs("test.ser", ofstream::out | ofstream::binary);
 
     serialize(a, ofs);
     ofs.close();
-    */
+
+    a.clear();
 
     ifstream ifs("test.ser", ifstream::in | ofstream::binary);
     ifs >> noskipws;
 
     deserialize(a, ifs);
-    cout << "Deser res:" << a << endl;
+//    /cout << "Deser res:" << a << endl;
 
     ifs.close();
     /*string hello = "hello!";

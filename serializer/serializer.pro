@@ -6,4 +6,5 @@ CONFIG -= qt
 SOURCES += main.cpp
 
 HEADERS += \
-    serialize.h
+    serialize.h \
+    serialize_exception.h
