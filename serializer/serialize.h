@@ -78,27 +78,36 @@ void serialize(const T &obj, std::ostream &os)
     write_byte(os, SerBytes::DELIMETR);
     write_byte(os, SerBytes::RAW);
 
-    size_t len;
-    if(typeid(T).name() == typeid(char*).name()){
-        len = std::strlen((char*)obj) * sizeof(char);
-        os.write((char*)obj, len);
-    }else{
-        len = sizeof(T);
-        const uint8_t *ptr = reinterpret_cast<const uint8_t *>(&obj);
-        std::ostream_iterator<uint8_t> oi(os);
-        std::copy(ptr, ptr + len, oi);
-    }
-
+    const uint8_t *ptr = reinterpret_cast<const uint8_t *>(&obj);
+    std::ostream_iterator<uint8_t> oi(os);
+    std::copy(ptr, ptr + sizeof(T), oi);
 
     write_byte(os, SerBytes::RAW);
     write_byte(os, SerBytes::DELIMETR);
 }
 
 
+
+template <>
+void serialize<char*>(char* const &obj, std::ostream &os)
+{
+    write_byte(os, SerBytes::DELIMETR);
+    write_byte(os, SerBytes::RAW);
+
+    size_t len = std::strlen((char*)obj) * sizeof(char);
+    os.write((char*)obj, len);
+
+    write_byte(os, SerBytes::RAW);
+    write_byte(os, SerBytes::DELIMETR);
+
+}
+
+
+
+
 template <typename T>
 void serialize(const std::vector<T> &obj, std::ostream &os)
 {
-    cout << "Ser: vector" << endl;
     write_byte(os, SerBytes::DELIMETR);
     write_byte(os, SerBytes::VEC);
     for (auto &row : obj) // access by reference to avoid copying
@@ -112,7 +121,6 @@ void serialize(const std::vector<T> &obj, std::ostream &os)
 template<>
 void serialize<std::string>(const std::string &obj, std::ostream &os)
 {
-    cout << "Ser: string" << endl;
     write_byte(os, SerBytes::DELIMETR);
     write_byte(os, SerBytes::STR);
     serialize((char*)obj.c_str(), os);
@@ -130,7 +138,6 @@ void serialize<std::string>(const std::string &obj, std::ostream &os)
 template <typename K, typename V>
 void serialize(const std::map<K, V> &obj, std::ostream &os)
 {
-    cout << "Ser: map" << endl;
     write_byte(os, SerBytes::DELIMETR);
     write_byte(os, SerBytes::MAP);
     for (auto& kv : obj)
@@ -157,7 +164,6 @@ template <typename T>
 void deserialize(T &obj, std::istream &is)
 {
 
-    cout << "DeSer: raw" << endl;
     uint8_t oct = read_ser_type(is);
     if(oct != SerBytes::RAW){
         throw RAWDeserializationException();
@@ -176,7 +182,6 @@ void deserialize(T &obj, std::istream &is)
 template<>
 void deserialize<char*>(char* &obj, std::istream &is)
 {
-    cout << "DeSer: raw" << endl;
     uint8_t oct = read_ser_type(is);
     if(oct != SerBytes::RAW){
         throw RAWDeserializationException();
@@ -187,9 +192,8 @@ void deserialize<char*>(char* &obj, std::istream &is)
         throw RAWDeserializationException();
     }
 
-    size_t len = (is.tellg()  - start_pos);
+    size_t len = (size_t(is.tellg())  - start_pos);
 
-    cout << len << endl;
 
     char *tmp = new char[len];
     is.seekg(start_pos);
@@ -204,7 +208,6 @@ void deserialize<char*>(char* &obj, std::istream &is)
 template <typename T>
 void deserialize(std::vector<T> &obj, std::istream &is)
 {
-    cout << "DeSer: vector" << endl;
     uint8_t oct = read_ser_type(is);
     if(oct != SerBytes::VEC){
         throw VectorDeserializationException();
@@ -221,7 +224,7 @@ void deserialize(std::vector<T> &obj, std::istream &is)
 template<>
 void deserialize<std::string>(std::string &obj, std::istream &is)
 {
-    cout << "DeSer: string" << endl;
+
     uint8_t oct = read_ser_type(is);
     if(oct != SerBytes::STR){
         throw StringDeserializationException();
@@ -239,7 +242,6 @@ void deserialize<std::string>(std::string &obj, std::istream &is)
 template <typename K, typename V>
 void deserialize(std::map<K, V> &obj, std::istream &is)
 {
-    cout << "DeSer: map" << endl;
     uint8_t oct = read_ser_type(is);
     if(oct != SerBytes::MAP){
         throw MapDeserializationException();
