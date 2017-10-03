@@ -16,6 +16,7 @@ TEST(SkipListTest, RandTest) {
         list.insert(val_to_insert);
         list_real.push_back(tmp);
     }
+    ASSERT_EQ(list.size(), 100);
     for(int i = 0; i < 100; i++)
     {
         auto it = *(list.find(i));

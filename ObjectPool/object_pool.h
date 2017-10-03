@@ -3,26 +3,38 @@
 #include <iostream>
 #include <cstring>
 
+
+class ObjectPoolException :public std::exception {};
+
+class OutOfLimitException :public ObjectPoolException
+{
+public :const char *what() const noexcept {return "out of limit";}
+};
+
 template<typename T>
 class ObjectPool
 {
 protected:
     size_t obj_size = sizeof(T);
-    size_t size;
+    size_t sz;
     T *objs;
     char *is_free;
 
 public:
+    inline size_t size(){
+        return sz;
+    }
+
     ObjectPool(const size_t _size){
         if(_size < 1){
             return ;
         }
-        size = _size;
+        sz = _size;
 
         try{
-            objs = (T*)new char[sizeof(T) * size];
-            is_free = new char[size];
-            std::memset(is_free, 1, size);
+            objs = (T*)new char[sizeof(T) * sz];
+            is_free = new char[sz];
+            std::memset(is_free, 1, sz);
         }
         catch(...){
             delete objs;
@@ -31,18 +43,18 @@ public:
     }
 
     template<class ...Args> T &alloc(Args&&... args){
-        for(size_t i = 0; i < size; i++){
+        for(size_t i = 0; i < sz; i++){
             if(is_free[i]){
                 is_free[i] = 0;
-                new (objs + (i * obj_size)) T(args...);
+                new (objs + (i * obj_size)) T(std::forward<Args>(args)...);
                 return * (objs + (i * obj_size));
             }
         }
-        throw;
+        throw OutOfLimitException();
     }
     void free(T &obj){
         T *obj_ptr = &obj;
-        for(size_t i = 0; i < size; i++){
+        for(size_t i = 0; i < sz; i++){
             if(!is_free[i] && obj_ptr == (objs + (i * obj_size))){
                 (objs + (i * obj_size))->~T();
                 is_free[i] = 1;
@@ -52,7 +64,7 @@ public:
     }
 
     ~ObjectPool(){
-        for(size_t i = 0; i < size; i++){
+        for(size_t i = 0; i < sz; i++){
             if(!is_free[i]){
                 (objs + (i * obj_size))->~T();
             }

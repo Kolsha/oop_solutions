@@ -6,4 +6,16 @@ CONFIG -= qt
 SOURCES += main.cpp
 
 HEADERS += \
-    object_pool.h
+    object_pool.h \
+    tests.h
+
+QMAKE_CXXFLAGS += -std=c++0x -pthread
+LIBS += -pthread
+
+
+INCLUDEPATH =\
+../../gtest/googletest/include\
+../../gtest/googletest
+
+SOURCES += \
+    ../../gtest/googletest/src/gtest-all.cc

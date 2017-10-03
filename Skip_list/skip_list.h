@@ -1,28 +1,76 @@
 #ifndef SKIP_LIST_H
 #define SKIP_LIST_H
-#define PROBABILITY 0.5
-
-#include <stdlib.h>
 #include <iostream>
 #include <vector>
 #include <stack>
 #include <algorithm>
+#include <random>
 
-template <typename Key_T, typename Mapped_T, size_t MaxLevel = 32>
+template <typename Key_T,
+          typename Mapped_T,
+          typename Compare = std::less<Key_T>,
+          typename Alloc = std::allocator<std::pair<const Key_T,Mapped_T>>,
+          size_t MaxLevel = 32>
 class SkipList
 {
-
-    typedef std::pair<const Key_T, Mapped_T> ValueType;
+protected:
+    using ValueType = std::pair<const Key_T, Mapped_T>;
 
     class Node
     {
     public:
-        Node() : nodes(std::vector<Node*>(MaxLevel, NULL)) { }
-        Node(ValueType data, size_t sz) : dataPair(data), nodes(std::vector<Node*>(MaxLevel, NULL)), size(sz) { }
+        Node() : nodes(std::vector<Node*>(MaxLevel, nullptr)) { }
+        Node(ValueType data, size_t sz) : dataPair(data), nodes(std::vector<Node*>(MaxLevel, nullptr)), size(sz) { }
         ValueType dataPair;
         std::vector<Node*> nodes;
-        size_t size;
+        size_t size = 0;
     };
+
+    Node *find_raw(const Key_T &key)
+    {
+        Node* current_node;
+        Node* fallback_node = levels;
+
+        for(int i = (MaxLevel - 1); i >= 0; i--)
+        {
+            current_node = fallback_node;
+            while(current_node != nullptr)
+            {
+                fallback_node = current_node;
+                if(current_node->nodes[i] == nullptr){
+                    break; // Next string on this node
+                }
+                else if (current_node->nodes[i]->dataPair.first == key){
+                    return current_node->nodes[i];
+                }
+                else if(!Compare()(current_node->nodes[i]->dataPair.first , key)){
+                    break;
+                }
+
+                else if(Compare()(current_node->nodes[i]->dataPair.first , key)){
+                    current_node = current_node->nodes[i];
+                }
+
+            }
+        }
+        return nullptr;
+    }
+
+    Node* levels;
+    size_t sz;
+    int getRandomLevel()
+    {
+        const int max_rand = 100000;
+        std::random_device rd;
+        std::mt19937 rng(rd());
+        std::uniform_int_distribution<int> uni(0, max_rand);
+        size_t retLevel = 1;
+        while((uni(rng) < (max_rand / 2)) && (retLevel < MaxLevel))
+        {
+            ++retLevel;
+        }
+        return retLevel;
+    }
 
 public:
 
@@ -35,6 +83,8 @@ public:
 
     class Iterator : public BaseIterator
     {
+    protected:
+        Node* value;
     public:
         Iterator(Node* item) : value(item) { }
 
@@ -46,9 +96,9 @@ public:
 
         Iterator operator++(int)
         {
-            Iterator temp = *this;
+            Iterator it = *this;
             value = value->nodes[0];
-            return temp;
+            return it;
         }
 
         ValueType &operator*() const
@@ -61,11 +111,13 @@ public:
             return &value->dataPair;
         }
 
-        Node* value;
+
     };
 
     class ConstIterator : public BaseIterator
     {
+    protected:
+        Node* value;
     public:
         ConstIterator(Node* item) : value(item) { }
 
@@ -77,9 +129,9 @@ public:
 
         ConstIterator operator++(int)
         {
-            ConstIterator temp = *this;
+            ConstIterator it = *this;
             value = value->nodes[0];
-            return temp;
+            return it;
         }
 
         const ValueType &operator*() const
@@ -91,13 +143,10 @@ public:
         {
             return &value->dataPair;
         }
-
-        Node* value;
     };
 
     SkipList()
     {
-        srand(time(NULL));
         levels = new Node();
         sz = 0;
     }
@@ -107,17 +156,21 @@ public:
         levels = new Node();
         sz = 0;
 
-        Iterator temp = list.begin();
-        for(int i = 0; i < list.size(); i++)
-            insert((temp++).value);
+        Iterator it = list.begin();
+        for(size_t i = 0; i < list.size(); i++){
+            insert((it++).value);
+        }
+
     }
 
     SkipList &operator=(const SkipList &list)
     {
         clear();
-        Iterator temp = list.begin();
-        for(int i = 0; i < list.size(); i++)
-            insert((temp++).value);
+        Iterator it = list.begin();
+        for(size_t i = 0; i < list.size(); i++){
+            insert((it++).value);
+        }
+
     }
 
     size_t size() const
@@ -132,9 +185,11 @@ public:
 
     Iterator end()
     {
-        Node* temp = levels->nodes[0];
-        while(temp != NULL) temp = temp->nodes[0];
-        return Iterator(temp);
+        Node* it = levels->nodes[0];
+        while(it != nullptr) {
+            it = it->nodes[0];
+        }
+        return Iterator(it);
     }
 
     ConstIterator begin() const
@@ -144,53 +199,29 @@ public:
 
     ConstIterator end() const
     {
-        Node* temp = levels->nodes[0];
-        while(temp != NULL) temp = temp->nodes[0];
-        return ConstIterator(temp);
+        Node* it = levels->nodes[0];
+        while(it != nullptr) {
+            it = it->nodes[0];
+        }
+        return ConstIterator(it);
     }
 
     Iterator find(const Key_T &key)
     {
-        Node* current_node;
-        Node* fallback_node = levels;
-
-        for(int i = (MaxLevel - 1); i >= 0; i--)
-        {
-            current_node = fallback_node;
-            while(current_node != NULL)
-            {
-                fallback_node = current_node;
-                if(current_node->nodes[i] == NULL || current_node->nodes[i]->dataPair.first > key)
-                    break; // Next string on this node
-                else if (current_node->nodes[i]->dataPair.first == key)
-                    return Iterator(current_node->nodes[i]);
-                else if(current_node->nodes[i]->dataPair.first < key)
-                    current_node = current_node->nodes[i];
-            }
+        Node *res = find_raw(key);
+        if(res != nullptr){
+            return Iterator(res);
         }
-        return NULL;
+        return nullptr;
     }
 
     ConstIterator find(const Key_T &key) const
     {
-        Node* current_node;
-        Node* fallback_node = levels;
-
-        for(int i = (MaxLevel - 1); i >= 0; i--)
-        {
-            current_node = fallback_node;
-            while(current_node != NULL)
-            {
-                fallback_node = current_node;
-                if(current_node->nodes[i] == NULL || current_node->nodes[i]->dataPair.first > key)
-                    break; // Next string on this node
-                else if (current_node->nodes[i]->dataPair.first == key)
-                    return ConstIterator(current_node->nodes[i]);
-                else if(current_node->nodes[i]->dataPair.first < key)
-                    current_node = current_node->nodes[i];
-            }
+        Node *res = find_raw(key);
+        if(res != nullptr){
+            return ConstIterator(res);
         }
-        return NULL;
+        return nullptr;
     }
 
     std::pair<Iterator, bool> insert(ValueType &pair)
@@ -204,26 +235,25 @@ public:
         for(int i = (MaxLevel - 1); i >= 0; i--)
         {
             current_node = fallback_node;
-            while(current_node != NULL)
+            while(current_node != nullptr)
             {
                 fallback_node = current_node;
-                if(current_node->nodes[i] == NULL)
+                if(current_node->nodes[i] == nullptr ||
+                        !Compare()(current_node->nodes[i]->dataPair.first, pair.first)
+                        )
                 {
-                    if(top_level > i) update_node_stack.push(current_node);
-                    break; // Next string on this node
+                    if(top_level > i){
+                        update_node_stack.push(current_node);
+                    }
+                    break;
                 }
                 else if (current_node->nodes[i]->dataPair.first == pair.first)
                 {
                     current_node->nodes[i]->dataPair.second = pair.second;
                     exists = true;
-                    break; // Seems like the best way to get out
+                    break;
                 }
-                else if(current_node->nodes[i]->dataPair.first > pair.first)
-                {
-                    if(top_level > i) update_node_stack.push(current_node);
-                    break; // Next string on this node
-                }
-                else if(current_node->nodes[i]->dataPair.first < pair.first)
+                else if(Compare()(current_node->nodes[i]->dataPair.first, pair.first))
                 {
                     current_node = current_node->nodes[i];
                 }
@@ -236,20 +266,17 @@ public:
         if(!exists)
         {
             Node *new_node = new Node(pair, top_level);
-            if(fallback_node == NULL) // This is the first element -- Special Case
+            if(fallback_node == nullptr) // This is the first element -- Special Case
             {
                 for(int k = 0; k < top_level; k++)
                     levels->nodes[k] = new_node;
             }
             else
             {
-                // ASSERT: Current Node points to a node who precedes our node to
-                // insert on at least string 0.
                 int j = 0;
                 Node *temp;
                 while(update_node_stack.size() > 0)
                 {
-                    // pop each node to be updated out [ 0 -> topLevel ]
                     temp = update_node_stack.top()->nodes[j];
                     update_node_stack.top()->nodes[j] = new_node;
                     new_node->nodes[j] = temp;
@@ -269,8 +296,10 @@ public:
     template <typename IT_T>
     void insert(IT_T range_beg, IT_T range_end)
     {
-        for (IT_T iter = range_beg; iter != range_end; ++iter)
-            insert(*iter);
+        for (IT_T it = range_beg; it != range_end; ++it){
+            insert(*it);
+        }
+
     }
 
     void erase(Iterator pos)
@@ -278,16 +307,18 @@ public:
         Node *org_val = pos.value;
         for(int i = 0; i < pos.value->size; i++)
         {
-            Node* temp = levels->nodes[i];
+            Node* it = levels->nodes[i];
             Node* prev = levels;
-            while(temp != NULL && temp != org_val)
+            while(it != nullptr && it != org_val)
             {
-                prev = temp;
-                temp = temp->nodes[i];
+                prev = it;
+                it = it->nodes[i];
             }
 
-            if(prev!=NULL)
+            if(prev!=nullptr){
                 prev->nodes[i] = org_val->nodes[i];
+            }
+
         }
         delete org_val;
         --sz;
@@ -295,37 +326,41 @@ public:
 
     void erase(Iterator range_beg, Iterator range_end)
     {
-        Iterator temp = range_beg;
+        Iterator it = range_beg;
         Iterator to_delete;
-        while(temp != range_end)
+        while(it != range_end)
         {
-            to_delete = temp;
-            erase(temp);
-            temp = ++to_delete;
+            to_delete = it;
+            erase(it);
+            it = ++to_delete;
         }
     }
 
     void clear()
     {
-        while(sz > 0)
+        while(sz > 0){
             erase((*this).begin());
+        }
+
     }
 
-    bool operator==(const SkipList &a)
+    bool operator==(const SkipList &other)
     {
-        if(sz != a.size()) return false;
+        if(sz != other.size()){
+            return false;
+        }
 
-        Iterator b = a.begin();
-        Node* temp = levels->nodes[0];
+        Iterator other_it = other.begin();
+        Node* self_it = levels->nodes[0];
         for(int i = 0; i < sz; i++)
         {
-            if(!(b.value->dataPair.first == temp->dataPair.first &&
-                 b.value->dataPair.second == temp->dataPair.second))
+            if(!(other_it.value->dataPair.first == self_it->dataPair.first &&
+                 other_it.value->dataPair.second == self_it->dataPair.second))
             {
                 return false;
             }
-            b++;
-            temp = temp->nodes[0];
+            other_it++;
+            self_it = self_it->nodes[0];
         }
         return true;
     }
@@ -335,49 +370,36 @@ public:
         return !(*this == a);
     }
 
-    bool operator<(const SkipList &a)
+    bool operator<(const SkipList &other)
     {
-        Iterator b = a.begin();
-        Node* temp = levels->nodes[0];
+        Iterator other_it = other.begin();
+        Node* self_it = levels->nodes[0];
         for(int i = 0; i < sz; i++)
         {
-            if(temp == NULL && b != NULL) return true;
-            if(temp != NULL && b == NULL) return false;
-            if(temp == NULL && b == NULL) return true;
+            if(self_it != nullptr && other_it == nullptr) return false;
+            if(self_it == nullptr && other_it != nullptr) return true;
 
-            if(temp->dataPair.second < b.value->dataPair.second)
+
+            if(Compare()(self_it->dataPair.second, other_it.value->dataPair.second))
             {
                 return true;
             }
-            b++;
-            temp = temp->nodes[0];
+            other_it++;
+            self_it = self_it->nodes[0];
         }
         return true;
     }
 
     ~SkipList()
     {
-        Node* temp = levels->nodes[0];
-        while(temp != NULL)
+        Node* it = levels->nodes[0];
+        while(it != nullptr)
         {
-            Node* old_temp = temp;
-            temp = temp->nodes[0];
-            delete old_temp;
+            Node* prev_it = it;
+            it = it->nodes[0];
+            delete prev_it;
         }
         delete levels;
-    }
-
-private:
-    Node* levels;
-    size_t sz;
-    int getRandomLevel()
-    {
-        size_t retLevel = 1;
-        while((((double) rand() / (RAND_MAX)) < PROBABILITY) && (retLevel < (MaxLevel)))
-        {
-            ++retLevel;
-        }
-        return retLevel;
     }
 };
 
