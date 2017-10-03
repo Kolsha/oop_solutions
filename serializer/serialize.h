@@ -75,6 +75,8 @@ uint8_t read_ser_type(std::istream &is){
 template <typename T>
 void serialize(const T &obj, std::ostream &os)
 {
+
+    static_assert(!std::is_same<T, std::nullptr_t>::value, "Nullptr");
     write_byte(os, SerBytes::DELIMETR);
     write_byte(os, SerBytes::RAW);
 
@@ -91,6 +93,10 @@ void serialize(const T &obj, std::ostream &os)
 template <>
 void serialize<char*>(char* const &obj, std::ostream &os)
 {
+
+    if(obj == nullptr){
+        return;
+    }
     write_byte(os, SerBytes::DELIMETR);
     write_byte(os, SerBytes::RAW);
 
@@ -101,6 +107,7 @@ void serialize<char*>(char* const &obj, std::ostream &os)
     write_byte(os, SerBytes::DELIMETR);
 
 }
+
 
 
 

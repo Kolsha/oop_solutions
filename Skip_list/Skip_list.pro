@@ -5,10 +5,8 @@ CONFIG -= qt
 
 SOURCES += main.cpp
 
-DISTFILES +=
-
 HEADERS += \
-    merging_iterator.h \
+    skip_list.h \
     tests.h
 
 QMAKE_CXXFLAGS += -std=c++0x -pthread

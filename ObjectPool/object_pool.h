@@ -1,60 +1,64 @@
 #ifndef OBJECT_POOL_H
 #define OBJECT_POOL_H
 #include <iostream>
-#include <vector>
+#include <cstring>
 
 template<typename T>
 class ObjectPool
 {
 protected:
-    struct ObjInfo{
-        T *obj;
-        bool is_free = true;
-    };
-    std::vector<ObjInfo> objs;
+    size_t obj_size = sizeof(T);
+    size_t size;
+    T *objs;
+    char *is_free;
+
 public:
-    ObjectPool(const size_t size){
-        if(size < 1){
-            throw;
+    ObjectPool(const size_t _size){
+        if(_size < 1){
+            return ;
         }
-        objs.reserve(size);
-        for(size_t i = 0; i < size; i++){
-            ObjInfo tmp;
-            tmp.is_free = true;
-            tmp.obj = (T*)malloc(sizeof(T));
-            if(tmp.obj == nullptr){
-                continue;//throw;
-            }
-            objs.push_back(std::move(tmp));
+        size = _size;
+
+        try{
+            objs = (T*)new char[sizeof(T) * size];
+            is_free = new char[size];
+            std::memset(is_free, 1, size);
+        }
+        catch(...){
+            delete objs;
+            delete is_free;
         }
     }
 
     template<class ...Args> T &alloc(Args&&... args){
-        for(size_t i = 0; i < objs.size(); i++){
-            if(objs[i].is_free){
-                objs[i].is_free = false;
-                new (objs[i].obj) T(args...);
-                return *(objs[i].obj);
+        for(size_t i = 0; i < size; i++){
+            if(is_free[i]){
+                is_free[i] = 0;
+                new (objs + (i * obj_size)) T(args...);
+                return * (objs + (i * obj_size));
             }
         }
         throw;
     }
     void free(T &obj){
         T *obj_ptr = &obj;
-        for(size_t i = 0; i < objs.size(); i++){
-            if(!objs[i].is_free && obj_ptr == objs[i].obj){
-                objs[i].obj->~T();
+        for(size_t i = 0; i < size; i++){
+            if(!is_free[i] && obj_ptr == (objs + (i * obj_size))){
+                (objs + (i * obj_size))->~T();
+                is_free[i] = 1;
                 return ;
             }
         }
     }
 
     ~ObjectPool(){
-        for(size_t i = 0; i < objs.size(); i++){
-            objs[i].obj->~T();
-            T *obj_ptr = objs[i].obj;
-            std::free(obj_ptr);
+        for(size_t i = 0; i < size; i++){
+            if(!is_free[i]){
+                (objs + (i * obj_size))->~T();
+            }
         }
+        delete objs;
+        delete is_free;
     }
 };
 

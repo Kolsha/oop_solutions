@@ -8,6 +8,11 @@ class RAWDeserializationException :public DeserializeException
 public :const char *what() const noexcept {return "error of raw data type deserialization";}
 };
 
+class RAWSeserializationException :public DeserializeException
+{
+public :const char *what() const noexcept {return "nullptr";}
+};
+
 class VectorDeserializationException :public DeserializeException
 {
 public :const char *what() const noexcept {return "error of vector deserialization";}

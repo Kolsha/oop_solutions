@@ -7,8 +7,9 @@ class Point {
 
 public:
     int m_x, m_y;
-    Point()                // конструктор без параметров
+    /*Point()                // конструктор без параметров
         : m_x(0), m_y(0) {}
+        */
     Point(int x, int y)    // конструктор с параметрами
         : m_x(x), m_y(y) {}
     ~Point(){
@@ -30,5 +31,8 @@ int main(int argc, char *argv[])
     cout << p1.m_x << " : " << p1.m_y << endl;
     pp.free(p1);
     cout << "free end" << endl;
+
+
+    // std::forward;
     return 0;
 }

@@ -21,7 +21,7 @@ TEST(Serialize, RawTest) {
 
     serialize(a, ofs);
     serialize(b, ofs);
-    serialize(c, ofs);
+    serialize((char*)nullptr, ofs);
     ofs.close();
 
     a = rand();
@@ -65,7 +65,7 @@ TEST(Serialize, StrTest) {
 
 TEST(Serialize, MapTest) {
 
-    std::map<size_t, int> a, a_real;
+    std::map<size_t, int> a, a_real, b;
     for(size_t i = 1; i <= size_t(rand() + 10); i++){
         int tmp = rand();
         a.insert({i, tmp});
@@ -74,6 +74,7 @@ TEST(Serialize, MapTest) {
     ofstream ofs("MapTest.ser", ofstream::out | ofstream::binary);
 
     serialize(a, ofs);
+    serialize(b, ofs);
     ofs.close();
 
     a.clear();
@@ -82,9 +83,11 @@ TEST(Serialize, MapTest) {
     ifs >> std::noskipws;
 
     deserialize(a, ifs);
+    deserialize(b, ifs);
     ifs.close();
 
     ASSERT_EQ(a.size(), a_real.size());
+    ASSERT_EQ(b.size(), 0);
     for(auto &kv : a){
         ASSERT_EQ(a_real[kv.first], kv.second);
     }
@@ -93,7 +96,7 @@ TEST(Serialize, MapTest) {
 
 TEST(Serialize, VecTEST) {
 
-    std::vector<int> a, a_real;
+    std::vector<int> a, a_real, b;
     for(size_t i = 1; i <= size_t(rand() + 10); i++){
         int tmp = rand();
         a.push_back(tmp);
@@ -102,6 +105,7 @@ TEST(Serialize, VecTEST) {
     ofstream ofs("VecTEST.ser", ofstream::out | ofstream::binary);
 
     serialize(a, ofs);
+    serialize(b, ofs);
     ofs.close();
 
     a.clear();
@@ -110,8 +114,10 @@ TEST(Serialize, VecTEST) {
     ifs >> std::noskipws;
 
     deserialize(a, ifs);
+    deserialize(b, ifs);
     ifs.close();
 
+    ASSERT_EQ(b.size(), 0);
     ASSERT_EQ(a.size(), a_real.size());
     for(size_t i = 0; i < a.size(); i++){
         ASSERT_EQ(a[i], a_real[i]);
@@ -123,19 +129,16 @@ TEST(Serialize, BadFileTEST) {
     ifstream ifs("VecTEST.ser", ifstream::in | ofstream::binary);
     ifs >> std::noskipws;
 
-    try{
-        deserialize(a, ifs);
-        SUCCEED();
-    }
-    catch(RAWDeserializationException &exp){
 
-    }
-    catch(...){
-        FAIL();
-    }
+    EXPECT_THROW(deserialize(a, ifs), RAWDeserializationException);
+    std::string b;
+    EXPECT_THROW(deserialize(b, ifs), StringDeserializationException);
+    std::vector<int> c;
+    EXPECT_THROW(deserialize(c, ifs), VectorDeserializationException);
+
 
     ifs.close();
-    FAIL();
+
 
 }
 

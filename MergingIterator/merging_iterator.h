@@ -1,86 +1,55 @@
 #ifndef MERGING_ITERATOR
 #define MERGING_ITERATOR
 #include <vector>
-#include <algorithm>    // std::sort
-#include <assert.h>
 
-
-template <class RandomAccessIterator, class Compare>
-void merge_sort(RandomAccessIterator first, RandomAccessIterator last, Compare comp)
+template <class InputIterator, class OutputIterator, class Compare>
+OutputIterator my_merge (std::initializer_list<InputIterator> first,
+                         std::initializer_list<InputIterator> last,
+                         OutputIterator result, Compare comp)
 {
-    //static assert
-    auto dist = distance(first, last);
-    if (dist <= 1)
-        return;
 
-    if (dist == 2)
-    {
-        if (comp(*first, *(first + 1)))
-            std::swap(*first, *(first + 1));
-        return;
+    if (first.size() != last.size()){
+        return result;
     }
 
-    //разбиение на подпоследовательности
-    RandomAccessIterator middle = first + (dist)/2;
-    merge_sort(first, middle, comp);
-    merge_sort(middle, last, comp);
+    std::vector<InputIterator> start = first;
+    std::vector<InputIterator> end = last;
+    InputIterator *max_pos = &(start[0]);
+    for(;;){
+        size_t last_idx = 0;
+        size_t real_size = start.size();
+        for(size_t i = 0; i < start.size(); i++){
 
-    //слияние уже отсортированных
-    RandomAccessIterator it_1st_part = first;
-    RandomAccessIterator it_2nd_part = middle;
+            if(start[i] == end[i]){
+                --real_size;
+                continue;
+            }
 
-    //доп. память для слияния
-    std::vector<typename std::iterator_traits<RandomAccessIterator>::value_type> merge_vector;
 
-    while (it_1st_part < middle && it_2nd_part < last)
-    {
-        if (*it_1st_part <= *it_2nd_part) //берем элемент из первой части
-        {
-            merge_vector.push_back(*it_1st_part);
-            ++it_1st_part;
+            if (comp(**max_pos, *start[i])){
+                max_pos = &(start[i]);
+            }
+            last_idx = i;
+
+
         }
-        else //берем элемент из второй части
-        {
-            merge_vector.push_back(*it_2nd_part);
-            ++it_2nd_part;
+        if(!real_size){
+            return result;
         }
-    } //один из итераторов вышел за границы своей части, осталось просто добрать вторую уже отсорт. часть
-    while (it_1st_part < middle)
-    {
-        merge_vector.push_back(*it_1st_part);
-        ++it_1st_part;
+        try{
+            *result = **max_pos;
+            ++result;
+            ++(*max_pos);
+            max_pos = &(start[last_idx]);
+        }
+        catch(...){
+            return result;
+        }
+
     }
-    while (it_2nd_part < last)
-    {
-        merge_vector.push_back(*it_2nd_part);
-        ++it_2nd_part;
-    }
-    // копируем в оригинал отсортированный массив
-    auto copy_iter = first;
-    for (auto it: merge_vector)
-    {
-        *copy_iter = it;
-        ++copy_iter;
-    }
+
+    return result;
 }
-
-
-
-
-template <class RandomAccessIterator, class Compare>
-void merge_sort(std::vector<RandomAccessIterator> first, std::vector<RandomAccessIterator> last, Compare comp){
-
-    assert(first.size() == last.size());
-
-    for (auto &row_1 : first){
-        for(auto &row_2 : last){
-            merge_sort(row_1, row_2, comp);
-        }
-    }
-
-
-}
-
 
 
 
