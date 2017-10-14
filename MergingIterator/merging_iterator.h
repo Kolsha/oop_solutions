@@ -1,8 +1,9 @@
 #ifndef MERGING_ITERATOR
 #define MERGING_ITERATOR
 #include <vector>
+#include <algorithm>
 
-template <class InputIterator, class OutputIterator, class Compare>
+template <class InputIterator, class OutputIterator, class Compare, bool pre_sort = false>
 OutputIterator my_merge (std::initializer_list<InputIterator> first,
                          std::initializer_list<InputIterator> last,
                          OutputIterator result, Compare comp)
@@ -14,6 +15,13 @@ OutputIterator my_merge (std::initializer_list<InputIterator> first,
 
     std::vector<InputIterator> start = first;
     std::vector<InputIterator> end = last;
+
+    if(pre_sort){
+        std::sort(start.begin(), start.end());
+        std::sort(end.begin(), end.end());
+    }
+
+
     InputIterator *max_pos = &(start[0]);
     for(;;){
         size_t last_idx = 0;

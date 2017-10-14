@@ -7,11 +7,11 @@
 class Comparator
 {
 public:
-    int operator () (int a, int b)
+    bool operator () (int a, int b)
     {
         return a > b ? 1: 0;
     }
-    int operator () (double a, double b)
+    bool operator () (double a, double b)
     {
         return a > b ? 1: 0;
     }

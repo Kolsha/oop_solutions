@@ -9,7 +9,6 @@
 template <typename Key_T,
           typename Mapped_T,
           typename Compare = std::less<Key_T>,
-          typename Alloc = std::allocator<std::pair<const Key_T,Mapped_T>>,
           size_t MaxLevel = 32>
 class SkipList
 {
@@ -83,9 +82,8 @@ public:
 
     class Iterator : public BaseIterator
     {
-    protected:
-        Node* value;
     public:
+        Node* value;
         Iterator(Node* item) : value(item) { }
 
         Iterator &operator++()
@@ -116,9 +114,8 @@ public:
 
     class ConstIterator : public BaseIterator
     {
-    protected:
-        Node* value;
     public:
+        Node* value;
         ConstIterator(Node* item) : value(item) { }
 
         ConstIterator &operator++()
@@ -185,11 +182,7 @@ public:
 
     Iterator end()
     {
-        Node* it = levels->nodes[0];
-        while(it != nullptr) {
-            it = it->nodes[0];
-        }
-        return Iterator(it);
+        return Iterator(nullptr);
     }
 
     ConstIterator begin() const
@@ -199,29 +192,19 @@ public:
 
     ConstIterator end() const
     {
-        Node* it = levels->nodes[0];
-        while(it != nullptr) {
-            it = it->nodes[0];
-        }
-        return ConstIterator(it);
+        return ConstIterator(nullptr);
     }
 
     Iterator find(const Key_T &key)
     {
         Node *res = find_raw(key);
-        if(res != nullptr){
-            return Iterator(res);
-        }
-        return nullptr;
+        return Iterator(res);
     }
 
     ConstIterator find(const Key_T &key) const
     {
         Node *res = find_raw(key);
-        if(res != nullptr){
-            return ConstIterator(res);
-        }
-        return nullptr;
+        return ConstIterator(res);
     }
 
     std::pair<Iterator, bool> insert(ValueType &pair)
@@ -388,6 +371,27 @@ public:
             self_it = self_it->nodes[0];
         }
         return true;
+    }
+
+    Mapped_T& operator[](const Key_T& key){
+        Node *row = find_raw(key);
+        if(row == nullptr){
+            Mapped_T tmp_val;
+            ValueType tmp_pair = {key, std::move(tmp_val)};
+            auto it = insert(tmp_pair);
+            row = it.first.value;
+        }
+
+        return row->dataPair.second;
+    }
+
+    Mapped_T& at(const Key_T& key){
+        Node *row = find_raw(key);
+
+        if(row == nullptr){
+            throw std::out_of_range("index not found");
+        }
+        return row->dataPair.second;
     }
 
     ~SkipList()
