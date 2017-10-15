@@ -18,7 +18,7 @@ TEST(SkipListTest, RandTest) {
         list_real.push_back(tmp);
         ASSERT_EQ(list[i], tmp);
     }
-    ASSERT_EQ(list.size(), 100);
+    ASSERT_EQ(list.size(), (size_t)100);
     for(int i = 0; i < 100; i++)
     {
         auto it = *(list.find(i));
@@ -38,6 +38,8 @@ TEST(SkipListTest, IteratorTest) {
     for(auto &row:list){
         ASSERT_EQ(row.second, test);
     }
+
+    list.erase(list.begin());
 
 }
 
