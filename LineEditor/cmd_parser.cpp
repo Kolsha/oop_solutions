@@ -50,7 +50,6 @@ std::shared_ptr<Command> CmdParser::parse_cmd(const std::string &cmd)
         ss >> idx1;
         ss.ignore(100, ',');
         ss >> idx2;
-        idx1++;
         Command *cmd = nullptr;
         if(name == "copy"){
             cmd = new CopyCmd(doc, idx1, idx2);
@@ -70,8 +69,8 @@ std::shared_ptr<Command> CmdParser::parse_cmd(const std::string &cmd)
         size_t idx = 0;
         std::string val = "";
         ss >> idx;
-        ss.ignore(100, ',');
-        ss >> val;
+        ss.ignore(2, ',');
+        val = cmd;
         auto it_begin = val.find_first_of('"');
         auto it_end = val.find_last_of('"');
         it_begin++;
