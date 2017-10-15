@@ -72,6 +72,21 @@ std::shared_ptr<Command> CmdParser::parse_cmd(const std::string &cmd)
         ss >> idx;
         ss.ignore(100, ',');
         ss >> val;
+        auto it_begin = val.find_first_of('"');
+        auto it_end = val.find_last_of('"');
+        it_begin++;
+
+        if(it_begin == std::string::npos ||
+                it_end == std::string::npos){
+            return nullptr;
+        }
+
+        val = val.substr(it_begin, (it_end - it_begin));
+        if(val.empty()){
+            return nullptr;
+        }
+
+        return std::shared_ptr<Command>(new InsertCmd(doc, val, idx));
 
     }
 

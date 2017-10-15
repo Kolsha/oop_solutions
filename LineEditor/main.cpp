@@ -7,38 +7,8 @@
 int main()
 {
     using namespace std;
-    std::shared_ptr<Document> doc(new Document("teststst"));
-    /*
+    std::shared_ptr<Document> doc(new Document("ABCDEFG"));
     LineEditor editor;
-
-    std::shared_ptr<UndoCmd> undo(new UndoCmd());
-    editor.add(undo);
-
-    *doc += "12344555";
-
-    CopyCmd cp(doc, 0, 9999);
-    cp.Execute();
-
-    PasteCmd ps(doc, 0);
-    ps.Execute();
-
-    /* InsertCmd inst(doc, "_KOLSHA_", 100);
-    inst.Execute();
-
-    hacktoberfest
-
-
-
-
-    cout << *doc << endl;
-
-    DelCmd del(doc, 0, 10);
-    del.Execute();
-    cout << *doc << endl;
-    del.unExecute();
-    cout << *doc << endl;
-    */
-
     stringstream ss("copy 1, 3\n"
                     "insert 1,\"hello\"\n"
                     "paste 6\n"
@@ -52,7 +22,13 @@ int main()
                     );
     CmdParser parser(ss, doc);
 
-    cout << "tes" << endl;
+    cout << "Before: " << *doc << endl;
+
+    for(auto &cmd: parser){
+        editor.add(cmd);
+    }
+
+    cout << " After: " << *doc << endl;
 
 
 
