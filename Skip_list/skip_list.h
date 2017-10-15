@@ -288,7 +288,7 @@ public:
     void erase(Iterator pos)
     {
         Node *org_val = pos.value;
-        for(int i = 0; i < pos.value->size; i++)
+        for(size_t i = 0; i < pos.value->size; i++)
         {
             Node* it = levels->nodes[i];
             Node* prev = levels;
