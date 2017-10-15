@@ -12,18 +12,6 @@ std::stack<std::string> clipboard;
 
 }
 
-
-//Cmd
-class Command
-{
-protected:
-    bool executed = false;
-public:
-    virtual void Execute() = 0;
-    virtual void unExecute() = 0;
-    virtual ~Command(){}
-};
-
 // Receiver
 class Document: public std::string
 {
@@ -38,6 +26,21 @@ public:
     }
     virtual ~Document(){}
 };
+
+
+//Cmd
+class Command
+{
+protected:
+    bool executed = false;
+    std::shared_ptr<Document> doc;
+public:
+    virtual void Execute() = 0;
+    virtual void unExecute() = 0;
+    virtual ~Command(){}
+};
+
+
 
 
 class UndoCmd: public Command{
@@ -113,7 +116,7 @@ public:
 
 class CopyCmd : public Command
 {
-    std::shared_ptr<Document> doc;
+
     size_t start, end;
     size_t len(){
         if(start >= end || end < 1){
@@ -125,10 +128,13 @@ class CopyCmd : public Command
 public:
     CopyCmd(std::shared_ptr<Document> _doc,
             size_t idx1 = 0, size_t idx2 = 0):
-        doc(_doc), start(idx1), end(idx2)
-    {}
+        start(idx1), end(idx2)
+    {
+        this->doc = _doc;
+    }
 
     void Execute(){
+
         size_t ln = len();
         if(ln > 0){
             std::string cp =  doc->substr(start, ln);
@@ -149,15 +155,16 @@ public:
 
 class PasteCmd : public Command
 {
-    std::shared_ptr<Document> doc;
     size_t idx;
     std::string str_pasted;
 
 public:
     PasteCmd(std::shared_ptr<Document> _doc,
              size_t _idx):
-        doc(_doc), idx(_idx)
-    {}
+        idx(_idx)
+    {
+        this->doc = _doc;
+    }
 
     void Execute(){
         if(clipboard.size() > 0){
@@ -182,14 +189,15 @@ public:
 
 class InsertCmd : public Command
 {
-    std::shared_ptr<Document> doc;
     std::string str;
     size_t idx, original_size = 0;
 public:
     InsertCmd(std::shared_ptr<Document> _doc,
               std::string _str = "", size_t _idx = 0):
-        doc(_doc), str(_str), idx(_idx)
-    {}
+        str(_str), idx(_idx)
+    {
+        this->doc = _doc;
+    }
 
     void Execute(){
         if(str.length() < 1){
@@ -222,7 +230,6 @@ public:
 
 class DelCmd : public Command
 {
-    std::shared_ptr<Document> doc;
     size_t start, end;
     size_t len(){
         if(start >= end || end < 1){
@@ -237,8 +244,10 @@ class DelCmd : public Command
 public:
     DelCmd(std::shared_ptr<Document> _doc,
            size_t idx1 = 0, size_t idx2 = 0):
-        doc(_doc), start(idx1), end(idx2)
-    {}
+        start(idx1), end(idx2)
+    {
+        this->doc = _doc;
+    }
 
     void Execute(){
         size_t ln = len();
