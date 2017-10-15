@@ -79,6 +79,7 @@ public:
         }
         commands.push_back(cmd);
         cmd->Execute();
+        cur++;
 
     }
 
@@ -104,7 +105,7 @@ public:
         }
 
         for (size_t i = 0; i < count; i++){
-            if (cur < (commands.size() - 1))
+            if (cur <= (commands.size() - 1))
                 commands[cur++]->Execute();
         }
     }
@@ -136,7 +137,7 @@ public:
     void Execute(){
 
         size_t ln = len();
-        if(ln > 0){
+        if(ln > 0 && start < doc->length()){
             std::string cp =  doc->substr(start, ln);
             clipboard.push(std::move(cp));
             executed = true;
@@ -155,7 +156,7 @@ public:
 
 class PasteCmd : public Command
 {
-    size_t idx;
+    size_t idx, original_size = 0;
     std::string str_pasted;
 
 public:
@@ -169,6 +170,10 @@ public:
     void Execute(){
         if(clipboard.size() > 0){
             str_pasted = clipboard.top();
+            if(doc->size() <= idx){
+                original_size = doc->length();
+                doc->resize((idx), '\n');
+            }
             doc->insert(idx, str_pasted);
             clipboard.pop();
             executed = true;
@@ -179,7 +184,10 @@ public:
         if(executed){
             doc->erase(idx, str_pasted.length());
             clipboard.push(str_pasted);
+            if(original_size > 0)
+                doc->resize(original_size);
             executed = false;
+
         }
     }
     virtual ~PasteCmd(){}
@@ -251,7 +259,7 @@ public:
 
     void Execute(){
         size_t ln = len();
-        if(ln > 0){
+        if(ln > 0 && start < doc->length()){
             deleted =  doc->substr(start, ln);
             doc->erase(start, ln);
             executed = true;
@@ -259,7 +267,7 @@ public:
     }
 
     void unExecute(){
-        if(len() > 0){
+        if(len() > 0 && deleted.length() > 0){
             doc->insert(start, deleted);
             executed = false;
         }
