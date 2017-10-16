@@ -6,6 +6,10 @@
 
 using namespace std;
 
+
+
+
+
 TEST(SkipListTest, RandTest) {
 
     SkipList<int, int> list;
@@ -31,17 +35,20 @@ TEST(SkipListTest, IteratorTest) {
     SkipList<int, std::string> list;
     std::string test = "tests";
     for(size_t i = 0; i < 10; i++){
-        std::pair<const int, ::string> tmp = {0, test};
+        std::pair<const int, ::string> tmp = {i, test };
         list.insert(tmp);
     }
 
-    for(auto &row:list){
-        ASSERT_EQ(row.second, test);
+    for(auto row = list.begin(); row != list.end(); ){
+        ASSERT_EQ(row->second, test);
+        row++;
     }
 
     list.erase(list.begin());
 
 }
+
+
 
 
 #endif // TESTS_H

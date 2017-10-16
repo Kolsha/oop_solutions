@@ -5,22 +5,26 @@
 #include <stack>
 #include <algorithm>
 #include <random>
+#include <memory>
 
 template <typename Key_T,
           typename Mapped_T,
           typename Compare = std::less<Key_T>,
-          size_t MaxLevel = 32>
+          size_t MaxLevel = 32,
+          typename Alloc = std::allocator<std::pair<const Key_T,Mapped_T>>
+          >
 class SkipList
 {
 protected:
+    Alloc alc;
     using ValueType = std::pair<const Key_T, Mapped_T>;
 
     class Node
     {
     public:
         Node() : nodes(std::vector<Node*>(MaxLevel, nullptr)) { }
-        Node(ValueType data, size_t sz) : dataPair(data), nodes(std::vector<Node*>(MaxLevel, nullptr)), size(sz) { }
-        ValueType dataPair;
+        Node(ValueType* data, size_t sz) : dataPair(data), nodes(std::vector<Node*>(MaxLevel, nullptr)), size(sz) { }
+        ValueType *dataPair;
         std::vector<Node*> nodes;
         size_t size = 0;
     };
@@ -39,14 +43,14 @@ protected:
                 if(current_node->nodes[i] == nullptr){
                     break; // Next string on this node
                 }
-                else if (current_node->nodes[i]->dataPair.first == key){
+                else if (current_node->nodes[i]->dataPair->first == key){
                     return current_node->nodes[i];
                 }
-                else if(!Compare()(current_node->nodes[i]->dataPair.first , key)){
+                else if(!Compare()(current_node->nodes[i]->dataPair->first , key)){
                     break;
                 }
 
-                else if(Compare()(current_node->nodes[i]->dataPair.first , key)){
+                else if(Compare()(current_node->nodes[i]->dataPair->first , key)){
                     current_node = current_node->nodes[i];
                 }
 
@@ -76,15 +80,15 @@ public:
     class BaseIterator
     {
     public:
-        bool operator==(const BaseIterator &a) { return this == &a;  }
-        bool operator!=(const BaseIterator &a) { return !(this == &a); }
+        virtual ~BaseIterator(){}
     };
 
     class Iterator : public BaseIterator
     {
     public:
         Node* value;
-        Iterator(Node* item) : value(item) { }
+        Iterator(Node* item) : value(item) {
+        }
 
         Iterator &operator++()
         {
@@ -101,13 +105,19 @@ public:
 
         ValueType &operator*() const
         {
-            return value->dataPair;
+            //if(value != nullptr && value->dataPair != nullptr){
+            return *value->dataPair;
+            //}
         }
 
         ValueType *operator->() const
         {
-            return &value->dataPair;
+            return value->dataPair;
         }
+
+
+        bool operator==(const Iterator &a) { return this->value == a.value;  }
+        bool operator!=(const Iterator &a) { return !(this->value == a.value); }
 
 
     };
@@ -116,7 +126,7 @@ public:
     {
     public:
         Node* value;
-        ConstIterator(Node* item) : value(item) { }
+        ConstIterator(Node* item) : value(item) {        }
 
         ConstIterator &operator++()
         {
@@ -133,13 +143,18 @@ public:
 
         const ValueType &operator*() const
         {
-            return value->dataPair;
+            //if(value != nullptr && value->dataPair != nullptr){
+            return *value->dataPair;
+            //}
         }
 
         const ValueType *operator->() const
         {
             return &value->dataPair;
         }
+
+        bool operator==(const ConstIterator &a) { return this->value == a.value;  }
+        bool operator!=(const ConstIterator &a) { return !(this->value == a.value); }
     };
 
     SkipList()
@@ -222,7 +237,7 @@ public:
             {
                 fallback_node = current_node;
                 if(current_node->nodes[i] == nullptr ||
-                        !Compare()(current_node->nodes[i]->dataPair.first, pair.first)
+                        !Compare()(current_node->nodes[i]->dataPair->first, pair.first)
                         )
                 {
                     if(top_level > i){
@@ -230,13 +245,13 @@ public:
                     }
                     break;
                 }
-                else if (current_node->nodes[i]->dataPair.first == pair.first)
+                else if (current_node->nodes[i]->dataPair->first == pair.first)
                 {
-                    current_node->nodes[i]->dataPair.second = pair.second;
+                    current_node->nodes[i]->dataPair->second = pair.second;
                     exists = true;
                     break;
                 }
-                else if(Compare()(current_node->nodes[i]->dataPair.first, pair.first))
+                else if(Compare()(current_node->nodes[i]->dataPair->first, pair.first))
                 {
                     current_node = current_node->nodes[i];
                 }
@@ -248,7 +263,10 @@ public:
 
         if(!exists)
         {
-            Node *new_node = new Node(pair, top_level);
+            ValueType *pair_ptr = alc.allocate(1);
+            alc.construct(pair_ptr, pair);
+            Node *new_node = new Node(pair_ptr, top_level);
+
             if(fallback_node == nullptr) // This is the first element -- Special Case
             {
                 for(int k = 0; k < top_level; k++)
@@ -382,7 +400,7 @@ public:
             row = it.first.value;
         }
 
-        return row->dataPair.second;
+        return row->dataPair->second;
     }
 
     Mapped_T& at(const Key_T& key){
@@ -401,11 +419,16 @@ public:
         {
             Node* prev_it = it;
             it = it->nodes[0];
+
+            alc.destroy(prev_it->dataPair);
+            alc.deallocate(prev_it->dataPair, 1);
             delete prev_it;
         }
         delete levels;
     }
 };
+
+
 
 
 #endif
