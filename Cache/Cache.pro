@@ -7,4 +7,16 @@ SOURCES += main.cpp \
     cache.cpp
 
 HEADERS += \
-    cache.h
+    cache.h \
+    tests.h
+
+QMAKE_CXXFLAGS += -std=c++0x -pthread
+LIBS += -pthread
+
+
+INCLUDEPATH =\
+../../gtest/googletest/include\
+../../gtest/googletest
+
+SOURCES += \
+    ../../gtest/googletest/src/gtest-all.cc
