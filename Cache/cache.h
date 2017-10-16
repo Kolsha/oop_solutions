@@ -20,6 +20,39 @@ public:
 };
 
 
+
+class CacheApplier {
+private:
+    BaseCache* strat;
+public:
+    CacheApplier(BaseCache& strategy): strat(&strategy){}
+    inline void set_strategy(BaseCache& strategy){
+        strat = &strategy;
+    }
+
+    bool has_cache(const std::string &key){
+        return strat->has(key);
+    }
+
+    std::string read_from_cache(const std::string &key){
+        return strat->read(key);
+    }
+
+    void write_to_cache(const std::string &key, const std::string &value){
+        strat->write(key, value);
+    }
+
+    void remove_from_cache(const std::string &key){
+        strat->remove(key);
+    }
+};
+
+
+
+
+
+
+
 class MemoryCache: public BaseCache{
 protected:
     std::unordered_map<std::string, std::string> storage;
@@ -45,7 +78,7 @@ public:
 class NullCache: public BaseCache{
 public:
     inline bool has(const std::string &key){
-        return true;
+        return false;
         key.size();
     }
 
@@ -134,34 +167,6 @@ public:
     }
     virtual ~FileCache() {}
 };
-
-
-class CacheApplier {
-private:
-    BaseCache& strat;
-public:
-    CacheApplier(BaseCache& strategy): strat(strategy){}
-    inline void set_strategy(BaseCache& strategy){
-        strat = strategy;
-    }
-
-    bool has_cache(const std::string &key){
-        return strat.has(key);
-    }
-
-    std::string read_from_cache(const std::string &key){
-        return strat.read(key);
-    }
-
-    void write_to_cache(const std::string &key, const std::string &value){
-        strat.write(key, value);
-    }
-
-    void remove_from_cache(const std::string &key){
-        strat.remove(key);
-    }
-};
-
 
 }
 
