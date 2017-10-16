@@ -69,7 +69,7 @@ std::shared_ptr<Command> CmdParser::parse_cmd(const std::string &cmd)
         size_t idx = 0;
         std::string val = "";
         ss >> idx;
-        ss.ignore(2, ',');
+        ss.ignore(100, ',');
         val = cmd;
         auto it_begin = val.find_first_of('"');
         auto it_end = val.find_last_of('"');
