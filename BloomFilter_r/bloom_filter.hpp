@@ -1,11 +1,13 @@
 #pragma once
 
 #include <iostream>
+#include <array>
+
 
 namespace {
 
-
-constexpr unsigned int salts[] = {
+constexpr size_t salts_sz = 64;
+constexpr std::array<unsigned int, salts_sz> salts = {
     0x1953c322, 0x588ccf17, 0x64bf600c, 0xa6be3f3d,
     0x341a02ea, 0x15b03217, 0x3b062858, 0x5956fd06,
     0x18b5624f, 0xe3be0b46, 0x20ffcd5c, 0xa35dfd2b,
@@ -24,14 +26,12 @@ constexpr unsigned int salts[] = {
     0xa27e2a58, 0x66866fc5, 0x12519ce7, 0x437a8456,
 };
 
-constexpr size_t salts_sz = sizeof(salts) / sizeof(unsigned int);
-
 
 }
 
 template<
         class Val,
-        size_t  num_functions = salts_sz,
+        size_t  num_functions = salts.size(),
         size_t table_size = 128,
         class Hash = std::hash<Val>,
         class Allocator = std::allocator<unsigned char>
@@ -45,7 +45,7 @@ private:
     unsigned char *table = nullptr;
 public:
     BloomFilter(){
-        static_assert((num_functions <= salts_sz), "To many functions");
+        static_assert((num_functions <= salts.size()), "To many functions");
         table = alc.allocate(table_sz);
     }
 
