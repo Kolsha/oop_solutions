@@ -42,14 +42,19 @@ public:
 
 
 
-
-class UndoCmd: public Command{
+class UnRedoCmd: public Command{
+private:
+    bool redo = false;
+public:
+    UnRedoCmd(bool _redo = false) : redo(_redo) {}
     void Execute(){}
     void unExecute(){}
-};
-class RedoCmd: public Command{
-    void Execute(){}
-    void unExecute(){}
+    bool is_redo(){
+        return redo;
+    }
+    bool is_undo(){
+        return !redo;
+    }
 };
 
 // Invoker
@@ -62,13 +67,14 @@ public:
     LineEditor() {}
     void add(std::shared_ptr<Command> cmd)
     {
-        if(typeid(*cmd) == typeid(UndoCmd)){
-            undo();
-            return ;
-        }
+        if(UnRedoCmd* unre = dynamic_cast<UnRedoCmd*>(cmd.get()))
+        {
+            if(unre->is_redo()){
+                redo();
+            }else{
+                undo();
+            }
 
-        if(typeid(*cmd) == typeid(RedoCmd)){
-            redo();
             return ;
         }
 

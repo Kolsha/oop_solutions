@@ -21,6 +21,31 @@ public:
 
 
 
+
+template <typename T>
+class CacheApplier_T {
+private:
+    T strat;
+public:
+    bool has_cache(const std::string &key){
+        return strat.has(key);
+    }
+
+    std::string read_from_cache(const std::string &key){
+        return strat.read(key);
+    }
+
+    void write_to_cache(const std::string &key, const std::string &value){
+        strat.write(key, value);
+    }
+
+    void remove_from_cache(const std::string &key){
+        strat.remove(key);
+    }
+};
+
+
+
 class CacheApplier {
 private:
     BaseCache* strat;
@@ -77,25 +102,19 @@ public:
 
 class NullCache: public BaseCache{
 public:
-    inline bool has(const std::string &key){
+    inline bool has(const std::string &){
         return false;
-        key.size();
     }
 
-    inline std::string read(const std::string &key){
-
+    inline std::string read(const std::string &){
         return std::string("");
-        key.size();
     }
 
-    inline void write(const std::string &key, const std::string &value){
+    inline void write(const std::string &, const std::string &){
         return ;
-        key.size();
-        value.size();
     }
-    inline void remove(const std::string &key){
+    inline void remove(const std::string &){
         return ;
-        key.size();
     }
     virtual ~NullCache() {}
 };

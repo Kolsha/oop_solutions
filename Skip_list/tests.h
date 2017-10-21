@@ -44,8 +44,6 @@ TEST(SkipListTest, IteratorTest) {
         row++;
     }
 
-    list.erase(list.begin());
-
 }
 
 

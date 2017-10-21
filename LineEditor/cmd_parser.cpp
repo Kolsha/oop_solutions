@@ -38,11 +38,11 @@ std::shared_ptr<Command> CmdParser::parse_cmd(const std::string &cmd)
     std::transform(name.begin(), name.end(), name.begin(), ::tolower);
 
     if(name == "undo"){
-        return std::shared_ptr<Command>(new UndoCmd);
+        return std::shared_ptr<Command>(new UnRedoCmd());
     }
 
     if(name == "redo"){
-        return std::shared_ptr<Command>(new RedoCmd);
+        return std::shared_ptr<Command>(new UnRedoCmd(true));
     }
 
     if(name == "copy" || name == "delete"){

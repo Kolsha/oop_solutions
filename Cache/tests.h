@@ -60,5 +60,21 @@ TEST(CacheTest, Second) {
 }
 
 
+TEST(CacheTest, templateTest) {
+
+
+    CacheApplier_T<MemoryCache> cache;
+
+    string str = "sdfsdfsdfsd";
+
+    cache.write_to_cache("test", str);
+    ASSERT_TRUE(cache.has_cache("test"));
+    ASSERT_EQ(cache.read_from_cache("test"), str);
+
+}
+
+
+
+
 
 

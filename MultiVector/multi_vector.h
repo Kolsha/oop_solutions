@@ -202,13 +202,7 @@ public:
     }
 
     bool operator==(const multi_vector& rhs){
-
-        for (size_t idx = 0; idx < dim; idx++){
-            if(coors[idx] != rhs[idx]){
-                return false;
-            }
-        }
-        return true;
+       return std::equal(coors.begin(), coors.end(), rhs.begin());
     }
 
     bool operator!=(const multi_vector& rhs){
@@ -216,13 +210,7 @@ public:
     }
 
     bool operator< (const multi_vector& rhs){
-
-        for (size_t idx = 0; idx < dim; idx++){
-            if(coors[idx] >= rhs[idx]){
-                return false;
-            }
-        }
-        return true;
+        return !(coors >= rhs.coors);
     }
 
     void transform(const Matrix<Key_T, dim> & transform) {

@@ -80,44 +80,46 @@ public:
     class BaseIterator
     {
     public:
+        Node* value;
+        bool operator==(const BaseIterator &a) { return this->value == a.value;  }
+        bool operator!=(const BaseIterator &a) { return !(this->value == a.value); }
         virtual ~BaseIterator(){}
     };
 
     class Iterator : public BaseIterator
     {
     public:
-        Node* value;
-        Iterator(Node* item) : value(item) {
+
+        Iterator(Node* item) {
+            this->value = item;
         }
 
         Iterator &operator++()
         {
-            value = value->nodes[0];
+
+            this->value = this->value->nodes[0];
             return *this;
         }
 
         Iterator operator++(int)
         {
             Iterator it = *this;
-            value = value->nodes[0];
+            this->value = this->value->nodes[0];
             return it;
         }
 
         ValueType &operator*() const
         {
-            //if(value != nullptr && value->dataPair != nullptr){
-            return *value->dataPair;
-            //}
+            return *(this->value->dataPair);
         }
 
         ValueType *operator->() const
         {
-            return value->dataPair;
+            return this->value->dataPair;
         }
 
 
-        bool operator==(const Iterator &a) { return this->value == a.value;  }
-        bool operator!=(const Iterator &a) { return !(this->value == a.value); }
+
 
 
     };
@@ -125,32 +127,31 @@ public:
     class ConstIterator : public BaseIterator
     {
     public:
-        Node* value;
-        ConstIterator(Node* item) : value(item) {        }
+        ConstIterator(Node* item){
+            this->value = item;
+        }
 
         ConstIterator &operator++()
         {
-            value = value->nodes[0];
+            this->value = this->value->nodes[0];
             return *this;
         }
 
         ConstIterator operator++(int)
         {
             ConstIterator it = *this;
-            value = value->nodes[0];
+            this->value = this->value->nodes[0];
             return it;
         }
 
         const ValueType &operator*() const
         {
-            //if(value != nullptr && value->dataPair != nullptr){
-            return *value->dataPair;
-            //}
+            return *(this->value->dataPair);
         }
 
         const ValueType *operator->() const
         {
-            return &value->dataPair;
+            return &this->value->dataPair;
         }
 
         bool operator==(const ConstIterator &a) { return this->value == a.value;  }
