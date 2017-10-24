@@ -75,6 +75,33 @@ TEST(CacheTest, templateTest) {
 
 
 
+TEST(CacheTest, PoorManTest) {
+
+    const size_t poor_sz = 10;
+    PoorManMemoryCache poor(poor_sz);
+    CacheApplier cache(poor);
+
+    string str = "12312312";
+    for(size_t i = 0; i < poor_sz; i++){
+        cache.write_to_cache("test" + to_string(i), str);
+    }
+
+    for(size_t i = 0; i < poor_sz; i++){
+        ASSERT_TRUE(cache.has_cache("test" + to_string(i)));
+    }
+
+    for(size_t i = 0; i < poor_sz; i++){
+        cache.write_to_cache("2test" + to_string(i), str);
+    }
+
+    for(size_t i = 0; i < poor_sz; i++){
+        ASSERT_FALSE(cache.has_cache("test" + to_string(i)));
+
+    }
+
+
+}
+
 
 
 

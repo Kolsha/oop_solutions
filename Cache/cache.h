@@ -3,6 +3,8 @@
 #include <iostream>
 #include <unordered_map>
 #include <fstream>
+#include <vector>
+#include <algorithm>
 
 namespace Kolsha {
 
@@ -123,9 +125,16 @@ class PoorManMemoryCache: public BaseCache{
 private:
     size_t sz;
 protected:
-    std::unordered_map<std::string, std::string> storage;
+    using val = std::pair<std::string, std::string>;
+    std::vector<val> storage;
+    std::vector<val>::iterator find_by_key(const std::string &key){
+        auto it = std::find_if( storage.begin(), storage.end(),
+                                [&key](const val& p){ return p.first == key;} );
+        return it;
+    }
+
 public:
-    PoorManMemoryCache(size_t _size = 100) :
+    PoorManMemoryCache(size_t _size = 32) :
         sz(_size){}
 
     inline size_t size(size_t new_size = 0){
@@ -136,21 +145,35 @@ public:
     }
 
     inline bool has(const std::string &key){
-        return storage.find(key) != storage.end();
+        return std::any_of(storage.begin(), storage.end(),
+                           [&key](const val& p)
+        { return p.first == key; });
     }
 
     inline std::string read(const std::string &key){
-        return storage.at(key);
+        auto it = find_by_key(key);
+        if(it == storage.end()){
+            throw std::out_of_range("Key not found");
+        }
+        return it->second;
     }
 
     inline void write(const std::string &key, const std::string &value){
         if(storage.size() >= sz){
             storage.erase(storage.begin());
         }
-        storage[key] = value;
+        auto it = find_by_key(key);
+        val pair = {key, value};
+        if(it != storage.end()){
+            storage.erase(it);
+        }
+        storage.push_back(pair);
     }
     inline void remove(const std::string &key){
-        storage.erase(key);
+        auto it = find_by_key(key);
+        if(it != storage.end()){
+            storage.erase(it);
+        }
     }
     virtual ~PoorManMemoryCache() {}
 
