@@ -31,6 +31,8 @@ TEST(Object_Pool, PointTest) {
     Point &p2 = pp.alloc();
     ASSERT_EQ(p2.m_x, 0);
     ASSERT_EQ(p2.m_y, 0);
+    pp.free(p1);
+    pp.free(p2);
 }
 
 TEST(Object_Pool, ThrowTest) {

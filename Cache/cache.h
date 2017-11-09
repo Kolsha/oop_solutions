@@ -140,6 +140,7 @@ public:
     inline size_t size(size_t new_size = 0){
         if(new_size > 0){
             sz = new_size;
+            storage.resize(new_size);
         }
         return sz;
     }
